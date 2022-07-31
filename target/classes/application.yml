@@ -1,0 +1,66 @@
+#修改端口
+server:
+  port: 80
+
+#配置数据源
+spring:
+  datasource:
+    druid:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://localhost:3306/eims?serverTimezone=Asia/Shanghai&characterEncoding=utf-8
+      username: root
+      password:
+#      password: Hnjd2022.hpb
+      #最大并发连接数
+      max-active: 100
+      #初始连接数
+      initial-size: 1
+      #最小连接数
+      min-idle: 5
+  #
+  # 静态文件请求匹配方式
+
+  thymeleaf:
+    #开发阶段关闭缓存
+    cache: true
+    template-resolver-order: 0
+  mvc:
+    static-path-pattern: classpath:/static/**
+  web:
+    resources:
+      static-locations: classpath:/static/**
+  jackson:
+    date-format: yyyy-MM-dd
+    time-zone: Asia/Shanghai
+  servlet:
+    multipart:
+      #开启文件上传
+      enabled: true
+      max-file-size: 10MB
+      max-request-size: 10MB
+#  #服务名称
+#  application:
+#    name: myDemo-server
+
+
+#配置redis
+  redis:
+    host: 127.0.0.1
+    port: 6379
+    #日志相关
+logging:
+  config: classpath:logback-spring.xml
+
+mybatis-plus:
+  configuration:
+    #开启日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+#    关闭驼峰自动转换
+    map-underscore-to-camel-case: false
+  global-config:
+    db-config:
+      #表前缀
+#      table-prefix: ls_
+      #id自增
+      id-type: auto
+

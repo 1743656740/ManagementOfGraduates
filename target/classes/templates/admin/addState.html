@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>添加就业信息</title>
+    <link rel="stylesheet" href="/css/amazeui.min.css">
+    <link rel="stylesheet" href="/css/admin.css">
+    <link rel="stylesheet" type="text/css" href="/plugins/elementui/index.css">
+    <style>
+        .admin-main {
+            padding-top: 0px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="am-cf admin-main" id="addState">
+    <!-- content start -->
+    <div>
+        <a href="/empState">
+            <i class="el-icon-back"></i>
+            <span style="font-size: 15px">返回</span>
+        </a>
+    </div>
+    <div class="admin-content">
+        <div class="admin-content-body">
+            <div class="am-g" style="width:65rem;">
+                <el-form :rules="rules" class="am-form am-form-horizontal" id="addStateForm"
+                         method="post" style="padding-top: 30px;">
+                    <input value="504" name="roleId" type="hidden">
+                    <div class="am-form-group" v-if="false">
+                        <label class="am-u-sm-3 am-form-label">
+                            姓名
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input id="roleName" v-model="fromList.sname" required placeholder="请输入姓名"
+                                   name="sname" type="text">
+                        </div>
+                    </div>
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            学号
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input id="sid" v-model="fromList.sid" required placeholder="学号"
+                                   name="sid" type="number">
+                        </div>
+                    </div>
+                    <!--ID 姓名  学生就业状态 目前实习单位 学生就业岗位  当前薪资 就业照片  就业城市 -->
+                    <!-- 选择框 -->
+                    <div class="am-form-group" style="cursor: pointer;">
+                        <label class="am-u-sm-3 am-form-label">
+                            就业状态
+                        </label>
+                        <!-- 2690 -->
+                        <div class="am-u-sm-9" style="cursor: pointer;">
+                            <el-select :disable="true" class="select" name="state" v-model="fromList.state"
+                                       placeholder="请选择" @change="getSelect" id="state" style="z-index: 99;">
+                                <el-option v-for="item in options" :key="item.id" :label="item.label"
+                                           :value="[item.id,item.label]">
+                                </el-option>
+                            </el-select>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            目前实习单位
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.internship" type="text" name="internship"
+                                   placeholder="请输入目前实习单位"/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            就业岗位
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.working" type="text" name="working"
+                                   placeholder="请输入学生就业岗位"/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            当前薪资
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.money" type="number" name="money" placeholder="请输入当前薪资"/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            就业城市
+                        </label>
+                        <div class="am-u-sm-9">
+                            <div data-toggle="distpicker">
+                                <select id="a" name="prov"></select>
+                                <select v-model="fromList.city" name="city" id="city"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            就业照片
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input type="file" name="file" value="选择图片">
+                            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件(大小不能超过10MB)</div>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            是否签订就业协议
+                        </label>
+                        <div class="am-u-sm-9">
+                            <template>
+                                <el-radio v-model="fromList.isWrite" name="isWrite" label="true">是</el-radio>
+                                <el-radio v-model="fromList.isWrite" name="isWrite" label="false">否</el-radio>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            是否对口
+                        </label>
+                        <div class="am-u-sm-9">
+                            <template>
+                                <el-radio v-model="fromList.isCounterpart" name="isCounterpart" label="true">是</el-radio>
+                                <el-radio v-model="fromList.isCounterpart" name="isCounterpart" label="false">否</el-radio>
+                            </template>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            是否核心对口
+                        </label>
+                        <div class="am-u-sm-9">
+                            <template>
+                                <el-radio v-model="fromList.isCoreCounterpart" name="isCoreCounterpart" label="true">是</el-radio>
+                                <el-radio v-model="fromList.isCoreCounterpart" name="isCoreCounterpart" label="false">否</el-radio>
+                            </template>
+                        </div>
+                    </div>
+                    <!-- 初次实习时间  初次实习单位 -->
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            初次实习时间
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input type="date" v-model="fromList.firstWorking" name="firstWorking"/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            初次实习单位
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.firstWorkingSpace" type="text" name="firstWorkingSpace"
+                                   placeholder="请输入初次实习单位"/>
+                        </div>
+                    </div>
+                    <!-- 回访记录 推荐方式 推荐老师 -->
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            回访记录
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.backTalking" type="text" name="backTalking"
+                                   placeholder="请输入回访记录 "/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            推荐方式
+                        </label>
+                        <div class="am-u-sm-9">
+<!--                            <input type="text" name="recomWay" v-model="fromList.recomWay"-->
+<!--                                   placeholder="请输入推荐方式"/>-->
+                            <el-select v-model="fromList.recomWay" name="recomWay" placeholder="请选择">
+                                <el-option v-for="item in recomWay" :key="item.value" :label="item.label"
+                                           :value="item.label">
+                                    <span style="float: left">{{ item.label }}</span>
+                                </el-option>
+                            </el-select>
+                        </div>
+
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            推荐老师
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.recomTeacher" type="text" name="recomTeacher"
+                                   placeholder="请输入推荐老师"/>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            变动情况1
+                        </label>
+                        <div class="am-u-sm-9">
+									<textarea v-model="fromList.change1" name="change1"
+                                              placeholder="请输入变动情况1"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            变动情况2
+                        </label>
+                        <div class="am-u-sm-9">
+									<textarea v-model="fromList.change2" name="change2"
+                                              placeholder="请输入变动情况2"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            变动情况3
+                        </label>
+                        <div class="am-u-sm-9">
+									<textarea v-model="fromList.change3" name="change3"
+                                              placeholder="请输入变动情况3"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <div class="am-u-sm-9 am-u-sm-push-3">
+                            <input id="text" class="am-btn am-btn-success" @click="getAll" value="确认添加"
+                                   type="button">
+                        </div>
+                    </div>
+                </el-form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<!-- 城市选择插件 -->
+<script src="/js/distpicker.js"></script>
+<script>
+    var addState = new Vue({
+        el: "#addState",
+        data: {
+            fileList: [],
+            options: [{ //选项数据：模拟从后端拿到的数据
+                id: '1',
+                label: '在职'
+            }, {
+                id: '2',
+                label: '已跳槽'
+            }, {
+                id: '3',
+                label: '已离职'
+            }, {
+                id: '4',
+                label: '未就业'
+            }],
+            fromList: {
+            },
+
+            rules: { //校验规则
+                // type: [{required: true, message: '图书类别为必填项', trigger: 'blur'}],
+                // name: [{required: true, message: '图书名称为必填项', trigger: 'blur'}]
+            },
+            recomWay: [{
+                label: '自主'
+            }, {
+                label: '推荐'
+            }, {
+                label: '指导'
+            }]
+        },
+        created(){
+            console.log(this.fromList)
+        },
+        methods: {
+            handleChange(file, fileList) { //文件数量改变
+                this.fileList = fileList;
+            },
+            getSelect: function (e) { //e代表被选中的值，即下拉框的value。由于写的是[item.id,item.label]，现在是包含2个值的数组
+                let [id, label] = e //数组解构：数组解构时数组的元素是按次序排列的，变量的取值由它的位置决定
+                this.fromList.state = label;
+            },
+            //保存
+            getAll: function () {
+                if(this.fileList!==null){
+                    this.fromList.file = this.fileList;
+                }
+                var form =  new FormData(document.getElementById("addStateForm"));
+                $("#text").attr("disabled",true)
+                axios({
+                    url:"/jobs",
+                    method:"post",
+                    data:form,
+                    processData:false,
+                    contentType:false,
+                    }).then(res => {
+                    if (res.data.flag){
+                        this.$message.success(res.data.message)
+                        setInterval(this.jump,1000);
+                    }else {
+                        $("#text").attr("disabled",false)
+                        this.$message.error(res.data.message);
+                    }
+                })
+            },
+            jump:function (){
+                location.href = "/empState";
+            }
+        }
+    });
+</script>

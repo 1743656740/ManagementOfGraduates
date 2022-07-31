@@ -1,0 +1,52 @@
+.main-header{
+	background-color:#3c8dbc;
+	height: 50px;
+	width: 100%;
+	min-width: 800px;
+	position: fixed;
+	z-index: 9999;
+}
+.header-left{
+	margin-left: 20%;
+	position: absolute;
+}
+.header-left-span{
+	font-size: 25px;
+	line-height: 50px;
+	color:white;
+	font-family:system-ui ;
+}
+.header-right{
+	margin-left: 75%;
+	width: 300px;
+	height: 50px;
+	position: absolute;
+}
+.login{
+	font-size: 20px;
+	line-height: 50px;
+	position: relative;
+}
+.success{
+	width: 300px;
+	font-size: 20px;
+	line-height: 50px;
+	position: relative;
+}
+.success:hover{
+	cursor: pointer;
+}
+.success ul{
+	margin: 0;
+	padding: 0;
+	display: none;
+	text-align: center;
+	border-top: none;
+	position: absolute;
+	width: 100px;
+}
+.success li{
+	border: 1px black solid;
+	list-style: none;
+	text-decoration: none;
+}

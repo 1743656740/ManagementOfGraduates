@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>就业信息管理</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <!-- 引入样式 -->
+	<link rel="stylesheet" href="/css/examples.css">
+    <link rel="stylesheet" href="/plugins/elementui/index.css">
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<style>
+	[v-cloak] {
+		display: none;
+	}
+	.demo-table-expand {
+	    font-size: 0;
+	  }
+	  .demo-table-expand label {
+	    width: 150px;
+	    color: #99a9bf;
+	  }
+	  .demo-table-expand .el-form-item {
+	    margin-right: 0;
+	    margin-bottom: 0;
+	    width: 50%;
+	  }
+</style>
+
+<body class="hold-transition">
+<div id="preloader">
+	<div id="preloader-inner"></div>
+</div>
+<div id="app" v-cloak>
+
+    <div class="content-header">
+
+        <h1>就业信息</h1>
+
+    </div>
+
+    <div class="app-container">
+
+        <div class="box">
+
+            <div class="filter-container">
+                <el-input placeholder="姓名" v-model="pagination.name" style="width: 200px;" class="filter-item"></el-input>
+                <el-input placeholder="就业城市" v-model="pagination.city" style="width: 200px;" class="filter-item"></el-input>
+                <el-input placeholder="身份证号码" v-model="pagination.idCard" style="width: 200px;" class="filter-item"></el-input>
+                <el-button @click="queryCondition()" class="dalfBut">查询</el-button>
+                <el-button class="dalfBut" @click="resetCondition()">重置</el-button>
+				<el-button type="danger" size="mini" @click="ManyDeleteS()">删除</el-button>
+                <a style="color: white;" href="addState"><el-button type="primary" class="butT" >新建</el-button></a>
+
+                <el-button type="primary" @click="dialogVisible = true">点击扫描二维码录入信息</el-button>
+                <el-dialog title="请扫描二维码" :visible.sync="dialogVisible" width="20%" height="10%" :before-close="handleClose">
+                    <!--定义两个容器，class命名的用来存放链接用，id命名的用来展示可识别的二维码-->
+                    <div class="erweima">http://kalictfer.com/StudentState</div>
+                    <div id="erweimaImg" style="text-align: center"></div>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                    </span>
+                </el-dialog>
+				<br><br>
+				<i style="color: red">一键导入(xlsx/xls格式文件)：</i><input type="file" id="myExcel">
+				<el-button id="outFile" type="dalfBut" class="dalfBut">导出</el-button>
+				<el-button type="dalfBut" class="dalfBut" @click="getPage">分页</el-button>
+				<el-button type="dalfBut" class="dalfBut" @click="getList">查看全部信息</el-button>
+            </div>
+			<el-table ref="multipleTable" tooltip-effect="dark" style="width: 100%"
+					  @select="itemHandleSelectionChangeS" @selection-change="selsChange" size="small"
+					  current-row-key="id" :data="dataList" stripe highlight-current-row>
+<!--ID 姓名  学生就业状态 目前实习单位 学生就业岗位  当前薪资 就业照片  就业城市 -->
+				 <el-table-column  type="selection"></el-table-column>
+				 <el-table-column type="expand">
+				       <template slot-scope="props">
+				         <el-form label-position="left" inline class="demo-table-expand">
+				           <el-form-item label="初次实习时间">
+				             <span>{{ props.row.firstWorking }}</span>
+				           </el-form-item>
+				           <el-form-item label="初次实习单位">
+				             <span>{{ props.row.firstWorkingSpace}}</span>
+				           </el-form-item>
+				           <el-form-item label="是否签订就业协议">
+				             <span v-text="props.row.isWrite?'是':'否'"></span>
+				           </el-form-item>
+				           <el-form-item label="是否对口">
+				             <span v-text="props.row.isCounterpart?'是':'否'"></span>
+				           </el-form-item>
+				           <el-form-item label="是否核心对口">
+				             <span v-text="props.row.isCoreCounterpart?'是':'否'"></span>
+				           </el-form-item>
+				           <el-form-item label="回访记录">
+				             <span>{{ props.row.backTalking }}</span>
+				           </el-form-item>
+				           <el-form-item label="推荐方式">
+				             <span>{{ props.row.recomWay }}</span>
+				           </el-form-item>
+						   <el-form-item label="推荐老师">
+						     <span>{{ props.row.recomTeacher }}</span>
+						   </el-form-item>
+						   <el-form-item label="变动情况1">
+						     <span>{{ props.row.change1 }}</span>
+						   </el-form-item>
+						   <el-form-item label="变动情况2">
+						     <span>{{ props.row.change2 }}</span>
+						   </el-form-item>
+						   <el-form-item label="变动情况3">
+						     <span>{{ props.row.change3 }}</span>
+						   </el-form-item>
+							 <el-form-item label="身份证号">
+								 <span>{{ props.row.idCard }}</span>
+							 </el-form-item>
+				         </el-form>
+				       </template>
+				     </el-table-column>
+				<el-table-column prop="sid" label="学生id" align="center"></el-table-column>
+				<el-table-column prop="sname" label="姓名" align="center"></el-table-column>
+                <el-table-column prop="state" label="学生就业状态" align="center"></el-table-column>
+
+                <el-table-column prop="internship" label="目前实习单位 " align="center"></el-table-column>
+
+                <el-table-column prop="working" label="学生就业岗位" align="center"></el-table-column>
+				
+				<el-table-column prop="money" label="当前薪资 " align="center"></el-table-column>
+				 
+				<el-table-column prop="photo" label="就业照片" align="center">
+					<template slot-scope="scope">
+						<a :href="'http://kalictfer.com/file/download?filename='+scope.row.photo+''" target="_blank"><el-button type="text" class="butT" >{{scope.row.photo}}</el-button></a>
+					</template>
+				</el-table-column>
+				  
+				<el-table-column prop="city" label="就业城市" align="center"></el-table-column>
+
+                <el-table-column min-width="100%" label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+						<el-button type="danger" size="mini" @click="deleteOne(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+			
+            <!--分页组件-->
+            <div class="pagination-container" v-show="!queryAll">
+
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="/js/vue.js"></script>
+
+<script src="/plugins/elementui/index.js"></script>
+<!--导入一键导出功能的js库-->
+<script src="/js/tableToExcel.js"></script>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/xlsx.full.min.js"></script>
+
+<script src="/js/axios-0.18.0.js"></script>
+<!--引入二维码生成的库-->
+<script src="/js/qrcode.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+	$(function(){
+		$(window).preloader({
+			delay : 15000
+		});
+	});
+	//导出功能
+	var derive;
+	$(function (){
+		$("#outFile").click(function (){
+			if(!confirm("确认导出信息?")){
+				return false;
+			}
+			var arr1 = ["就业id","学生学号","学生名字","身份证号","初次实习报到时间","面试省份","实习单位或待业地址","变动1","变动2","变动3",
+				"就业状态","目前实习单位","岗位","初次实习单位","是否核心对口","当前工资","推荐方式","是否签订就业协议","推荐老师","是否对口","回访记录","就业照片(复制链接到浏览器查看)"];
+			var arr2 = [];
+			$.each(derive[0],function (index,domEle){
+				arr2.push(index);
+			})
+			for (var i = 0; i < derive.length; i++) {
+				derive[i].photo = "http://kalictfer.com/file/download?filename="+derive[i].photo;
+			}
+			tableToExcel(derive,arr1,arr2);
+			//第一个参数为需要导出的数据(JSON格式)  第二个参数为excel表的表头(数组格式)  第三个参数为 具体渲染的json对象的属性(数组格式)
+		})
+	})
+	//二维码生成
+    $(".erweima").qrcode({   //选择存放链接容器
+        width: 200, //width height如果不写默认是 256 256
+        height:200,
+        text: $('.erweima').html() //将链接容器的内容赋值给text
+    });
+    //定义方法
+    function canvasToImage(canvas) {
+        var image = new Image();
+        // 指定格式 PNG 图片后缀可自定义
+        image.src = canvas.toDataURL("image/png");
+        return image;
+    }
+    //找到需要转换的canvas
+    var mycanvas1 = document.getElementsByTagName('canvas')[0];
+    //进行方法转换
+    var img = canvasToImage(mycanvas1);
+    //将转换后的img标签插入到显示容器中
+    $('#erweimaImg').append(img);
+    $(".erweima").hide();
+    var vue = new Vue({
+        el: '#app',
+        data: {
+			queryAll:false,
+			sels:[],
+            dataList: [],//当前页要展示的列表数据
+			checkList:[],//所有选中的对象
+			checkListJid:[],//所有选中的对象的jid
+            dialogVisible: false,
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            formData: {},//表单数据
+            rules: {//校验规则
+
+            },
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 10,//总记录数
+                name:"",//学生姓名
+                city:"",//就业城市
+                idCard:"",//身份证号
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //分页查询
+            this.getPage();
+        },
+
+        methods: {
+
+			//分页查询
+			getPage() {
+				this.queryAll=false;
+				let str = "?sname="+this.pagination.name;
+				str += "&city="+this.pagination.city;
+				str += "&idCard="+this.pagination.idCard;
+				axios.get("/jobs/"+this.pagination.currentPage+"/"+this.pagination.pageSize+str)
+				.then(res=>{
+					if (res.data.flag){
+						derive = res.data.data.records;
+						this.dataList = res.data.data.records;
+						this.pagination.total = res.data.data.total;
+						$(window).preloader({
+							removeType : "preloader"
+						});
+					}else{
+						this.$message.info(res.data.message);
+					}
+				})
+			},
+			queryCondition(){
+				if(this.queryAll===true){
+					this.getList()
+				}else {
+					this.getPage();
+				}
+			},
+			//查询全部
+			getList(){
+				this.queryAll = true;
+				let str = "?sname="+this.pagination.name;
+				str += "&city="+this.pagination.city;
+				str += "&idCard="+this.pagination.idCard;
+				console.log(str)
+				axios.get("/JobsList/"+str).then(res=>{
+					if(res.data.flag){
+						derive = res.data.data;
+						this.dataList = res.data.data;
+					}else {
+						this.$message.error(res.data.message)
+					}
+				})
+			},
+
+			//切换页码
+			handleCurrentChange(currentPage) {
+				this.pagination.currentPage = currentPage;
+				this.getPage();
+			},
+
+			//全选
+			//获取多选框是否选中
+			itemHandleSelectionChangeS(selection,row){
+				this.deleteList = selection;
+				console.log(this.deleteList)
+				let selected = selection.length && selection.indexOf(row) !== -1
+			},
+
+			//全选,取消选择
+			  toggleSelection(rows) {
+			    if (rows) {
+			      rows.forEach(row => {
+			        this.$refs.multipleTable.toggleRowSelection(row);
+			      });
+			    } else {
+			      this.$refs.multipleTable.clearSelection();
+			    }
+			  },
+			//批量删除 全选
+			selsChange(sels) {
+				this.sels = sels;
+				console.log(this.sels)
+				console.log(0)
+			},
+            //弹出二维码
+            handleClose(done) {
+				done();
+            },
+
+            //弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+                this.resetForm();
+            },
+
+            //重置条件
+            resetCondition(){
+                this.pagination.name = "";
+                this.pagination.city = "";
+                this.pagination.idCard = "";
+				if(this.queryAll===true){
+					this.getList();
+				}else{
+					this.getPage();
+				}
+            },
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+            //取消
+            cancel() {
+                this.dialogFormVisible = false;
+                this.dialogFormVisible4Edit = false;
+                this.$message.info("当前操作取消");
+            },
+			//批量删除
+			ManyDeleteS(){
+				var jIds = this.sels.map(item => item.jid).toString(); //获取所有选中行的id组成的字符串
+				console.log(jIds)
+				this.$confirm("确定要删除吗?删除后不可撤回","警告",{type:"warning"}).then(()=>{
+					axios.delete("/deleteByJIds/"+jIds).then(res=>{
+						if (res.data.flag) {
+							this.$message.success(res.data.message)
+						} else {
+							this.$message.error(res.data.message)
+						}
+					}).finally(()=>{
+						if(this.queryAll===true){
+							this.getList()
+						}else {
+							this.getPage();
+						}
+					})
+				}).catch(()=>{
+					this.$message.info("操作取消")
+				})
+			},
+            // 删除单条
+			deleteOne(row) {
+				this.$confirm("确定删除该条数据吗?不可撤回!","警告",{type:"warning"})
+				.then(()=>{
+					axios.delete("/jobs/"+this.row.jid).then(res=>{
+						if (res.data.flag){
+							this.$message.success(res.data.message)
+						}else {
+							this.$message.error(res.data.message)
+						}
+					})
+				}).finally(()=>{
+					this.$message.info("操作取消")
+				})
+            },
+            //弹出编辑窗口
+            handleUpdate(row) {
+				str = "/editState?sid="+row.sid+"&jid="+row.jid;
+				parent.changeSrc(str) //调用父页面的changeSrc方法
+            },
+        }
+    })
+</script>
+<script>
+	var array =[];//接收文件内的数据
+	var jsonArrayList = [];//这是存最终传到后端的json对象的数组
+	var k = 0; //这个变量控制jsonArrayList存储对象的下标
+	//下面两个变量控制json对象的每一个键值对是否跟数据库一一对应
+	var isOk = [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0];
+	var strNo = ""; //这个变量接收哪个json对象无法导入到数据库内
+	window.onload=function(){
+		$('#myExcel').change(function(e) {
+			var excelListData = [];
+			var files = e.target.files; //这里获取的是上传的文件对象数组
+			//这里是判断上传的文件格式  如果为xlsx 或xls 格式的文件 就上传成功 否则失败
+			var filesuffixs = files[0].name.split(".")[1]; //这是获取上传文件的后缀名的
+			if(filesuffixs == "xlsx" || filesuffixs == "xls"){  //如果文件格式为xlsx/xls 就开始读取文件内数据
+				var fileReader = new FileReader();
+				fileReader.onload = function(ev) {
+					try {
+						var data = ev.target.result,
+								// 以二进制流方式读取得到整份excel表格对象
+								workbook = XLSX.read(data, {
+									type: 'binary'
+								}),
+								// 存储获取到的数据
+								excelListData = [];
+					} catch (e) {
+						alert('文件类型不正确');
+						return;
+					}
+					// 遍历每张表读取
+					for (var sheet in workbook.Sheets) {
+						if (workbook.Sheets.hasOwnProperty(sheet)) {
+							fromTo = workbook.Sheets[sheet]['!ref'];
+							excelListData  = excelListData.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+							// break; // 如果只取第一张表，就取消注释这行
+						}
+					}
+					console.log(isOk)
+					array = excelListData;// 当前为表格转化后的数据 赋值给自己声明的array数组存储
+					//这里判断数组内的json对象格式是否与数据库内字段一致 不一致也会导致上传失败 告诉用户失败原因
+					//利用了双重判断  一个为isOK数组内的值的判断 一个为json对象键值对的数量判断
+					for (var i = 0; i < array.length; i++) { //遍历json对象数组
+						var num = 0; // 这个变量判断json对象的键值对是否与数据库字段个数一致 9为一致(视自己表结构设置)
+						for(var key in array[i]){ //对每一个json对象的键进行判断
+							//在这个switch里面对每次循环的键和值进行校验
+							// console.log(key); //这是获取json对象的键
+							// console.log(array[i][key]);//这是获取json对象的键对应的值
+							switch (key){
+								case "sid" : typeof array[i][key]=='string'?isOk[0]++:1+1;break;
+								// case "sname" : typeof array[i][key]=='string'?isOk[1]++:1+1;break;
+								// case "idCard" : typeof array[i][key] == 'string'?isOk[2]++:1+1;break;
+								case "firstWorking" : typeof array[i][key] != 'string'?isOk[1]++:1+1;
+										array[i][key] = formatExcelTime(array[i][key]); break;
+								case "prov" : typeof array[i][key]=='string'?isOk[2]++:1+1;break;
+								case "city" : typeof array[i][key]=='string'?isOk[3]++:1+1;break;
+								case "change1" : typeof array[i][key]=='string'?isOk[4]++:1+1;break;
+								case "change2" : typeof array[i][key]=='string'?isOk[5]++:1+1;break;
+								case "change3" :  typeof array[i][key]=='string'?isOk[6]++:1+1;break;
+								case "state" : typeof array[i][key]=='string'?isOk[7]++:1+1;break;
+								case "internship" :  typeof array[i][key]=='string'?isOk[8]++:1+1;break;
+								case "working" :  typeof array[i][key]=='string'?isOk[9]++:1+1;break;
+								case "firstWorkingSpace" :  typeof array[i][key]=='boolean'?isOk[10]++:1+1;break;
+								case "isCoreCounterpart" :  typeof array[i][key]=='boolean'?isOk[11]++:1+1;break;
+								case "money" :  typeof array[i][key]=='number'?isOk[12]++:1+1;break;
+								case "recomWay" :  typeof array[i][key]=='string'?isOk[13]++:1+1;break;
+								case "isWrite" :  typeof array[i][key]=='boolean'?isOk[14]++:1+1;break;
+								case "recomTeacher" :  typeof array[i][key]=='string'?isOk[15]++:1+1;break;
+								case "isCounterpart" :  typeof array[i][key]=='boolean'?isOk[16]++:1+1;break;
+								case "backTalking" :  typeof array[i][key]=='string'?isOk[17]++:1+1;break;
+							}
+							num++;
+						}
+						console.log(isOk)
+						//在这里判断该对象的键值对是否与数据库字段匹配  不匹配就不添加到对象数组内
+						for (var j = 0; j < isOk.length; j++) {
+							if(isOk[j] != 1 || num > 18){
+								num = 403; //如果判断值有不等于1的值就说明文件不规范 不予添加到数据库
+							}
+							isOk[j] = 0; //这里对每一个判断的值重新赋值进行二次读取json对象循环
+						}
+						if(num==18){
+							jsonArrayList[k] = array[i];
+							k++; //对象与数据库字段一致 就把该json对象添加到jsonArrayList数组内 k值+1
+						}else{
+							strNo +=(i+1)+",";
+						}
+					}
+					if(jsonArrayList.length>0){
+						// 在这里把数据传到后台录入数据库
+						axios.post("/savesState",jsonArrayList).then(res=>{
+							alert(res.data.message);
+							location.reload();
+						})
+					}
+					if(strNo.length>0){
+						strNo = strNo.substring(0,strNo.length-1);
+						alert("第"+strNo+"条数据不符合上传规定，请重新编辑上传");
+						strNo = "" ;
+					}
+				};
+				// 使用文件流 以二进制方式打开文件
+				fileReader.readAsBinaryString(files[0]); //关键代码 少了它  数据拿不到
+			}else{
+				alert("上传文件格式不对,请重新上传");
+			}
+		});
+	}
+	function formatExcelTime(num) {
+		num = Number(num);  // 强制类型转化，以防传来的值是字符串
+		let millisecond = 0;  // 转化后的毫秒数
+		if (num > 60) {
+			millisecond = (num - 25569) * 60 * 60 * 24 * 1000;
+		} else {
+			millisecond = (num - 25568) * 60 * 60 * 24 * 1000;
+		}
+		let date = new Date(millisecond); // 根据转化后的毫秒数获取对应的时间
+		let yy = date.getFullYear();
+		let mm = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1;
+		let dd = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+		return yy + '-' + mm + '-' + dd;  // 返回格式化后的日期
+	}
+</script>
+</html>

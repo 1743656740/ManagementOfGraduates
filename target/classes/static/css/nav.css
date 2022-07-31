@@ -1,0 +1,34 @@
+.admin-nav{
+    background-color: #222d32;
+    width: 200px;
+    min-width: 10%;
+    height: 93%;
+    margin-top: 50px;
+    min-height: 465px;
+    position: absolute;
+	
+}
+.admin-nav ul{
+    list-style-type: none;
+    width: 200px;
+    margin: 0;
+    padding: 0;
+	cursor: pointer;
+}
+.admin-nav li{
+    color:white;
+    font-size: 20px;
+    padding: 20px;
+    margin-left: -5px;
+    list-style: none;
+	
+}
+.admin-nav a{
+    color: white;
+    text-decoration: none;
+}
+
+.a_li{
+	color: aqua;
+}
+

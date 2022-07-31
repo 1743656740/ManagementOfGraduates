@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>主页</title>
+    <link rel="stylesheet" type="text/css" href="/css/header.css"/>
+    <!--	<link rel="stylesheet" type="text/css" href="css/nav.css">-->
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+</head>
+<script src="/js/vue.js"></script>
+<script src="/js/jquery.min.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<style>
+    html,
+    body {
+        height: 100%;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    [v-cloak] {
+        display: none;
+    }
+
+    /*侧边导航栏*/
+    * {
+        list-style-type: none;
+        padding: 0;
+        margin: 0;
+    }
+
+        /*body {*/
+        /*	!*height: 100vh;*!*/
+        /*	display: flex;*/
+        /*	align-items: center;*/
+        /*	justify-content: center;*/
+        /*	background-color: #d3dafa;*/
+        /*}*/
+        .shell {
+            min-width: 200px;
+            margin-top: 25px;
+            position: absolute;
+            width: 10%;
+            /*width: 13%;*/
+            height: calc(100% - 25px);
+            /*导航栏颜色*/
+            background-color: #424345;
+            /*导航栏文字颜色*/
+            color: #cdd1d3;
+        }
+
+        .buttons {
+            margin: 60px 0;
+            color: #fff;
+        }
+
+        .li {
+            letter-spacing: 2px;
+            font: 600 17px '';
+            padding: 16px 52px;
+            transition: .3s;
+        }
+
+        .shell .fa {
+            content: '';
+            position: absolute;
+            left: 20px;
+            margin-top: 2px;
+            display: block;
+            width: 20px;
+            height: 20px;
+        }
+
+        .buttons > li:hover {
+            /*鼠标滑过一级目录的背景色*/
+            background-color: #74787a;
+        }
+
+        .li ul {
+            width: 0;
+            height: 650px;
+            padding: 60px 0;
+            position: absolute;
+            top: 0;
+            right: 0;
+            overflow: hidden;
+            /*伸缩出来的二级目录背景色*/
+            background-color: #343635;
+            transition: .3s;
+        }
+
+        .li ul li {
+            padding: 16px 24px;
+            transition: .3s;
+        }
+
+        .li:hover ul {
+            width: 150px;
+            height: 100%;
+        }
+
+        .li ul li:hover {
+            /*鼠标滑过二级目录的背景色*/
+            background-color: #74787a;
+        }
+
+        .li ul li a {
+            /*二级目录文字默认颜色*/
+            color: #cdd1d3;
+        }
+
+        .li ul li a:hover {
+            /*二级目录文字鼠标滑过颜色*/
+            color: white;
+        }
+</style>
+<body>
+<div style="width: 100%;height: 100%;">
+    <div id="main">
+        <!--页面头部-->
+        <header class="main-header">
+            <div class="header-left">
+                <span class="header-left-span"><b>欢迎使用学生就业信息管理系统</b></span>
+            </div>
+            <div class="header-right">
+                <div class="login" v-show="username.length == 0">
+                    请先<a href="/users/login">登录</a>
+                </div>
+
+                <!-- 如果未登录	-->
+                <!--				<div class="login" sec:authorize="!isAuthenticated()">-->
+                <!--					请先<a href="/users/login">登录</a>-->
+                <!--				</div>-->
+
+                <div class="success" style="width: 300px" v-show="username.length != 0">
+                    <div style="float: left;width: 180px;overflow: hidden">
+                        <i class="fa fa-user-o"></i>
+                        <span>欢迎您,{{username}}<i class="fa fa-caret-left"></i></span>
+                    </div>
+
+                    <div style="float: left;margin-left: 40px">
+                        <i class="el-icon-switch-button"></i>
+                        <a href="/logout" style="text-decoration: none"><span style="color: whitesmoke">注销</span></a>
+                    </div>
+                </div>
+
+            </div>
+
+        </header>
+
+        <!--  左侧导航  -->
+        <aside class="admin-nav" id="admin-nav">
+            <nav class="shell">
+                <ul class="buttons">
+                    <li class="li" v-show="studentMage">
+                        <i class="fa fa-address-card"></i>
+                        <p style="word-break:keep-all;">学生信息管理</p>
+                        <ul>
+                            <li><a href="studentInfo" target="view_window" style="word-break:keep-all;">学生基本信息</a></li>
+                            <li><a href="class" target="view_window" style="word-break:keep-all;">班级信息</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="li" v-show="empMage">
+                        <i class="fa fa-briefcase"></i>
+                        就业管理
+                        <ul>
+                            <li><a :href="StateUrl" v-if="role!=='学生'" target="view_window"
+                                   style="word-break:keep-all;">就业信息</a></li>
+                            <li><a :href="interviewUrl" target="view_window" style="word-break:keep-all;">面试信息</a></li>
+                            <li><a href="firm" v-if="role==='管理员'" target="view_window" style="word-break:keep-all;">企业资源</a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li class="li" v-show="sysMage">
+                        <i class="fa fa-cog"></i>
+                        系统管理
+                        <ul>
+                            <li><a href="user" target="view_window" style="word-break:keep-all;">用户管理</a></li>
+                            <li style="word-break:keep-all;"><a href="viewLog" target="view_window">查看访问日志</a></li>
+                            <li style="word-break:keep-all;"><a href="sysLog" target="view_window">查看操作日志</a></li>
+                        </ul>
+                    </li>
+
+                    <li class="li" v-show="staMage">
+                        <i class="fa fa-bar-chart"></i>
+                        报表统计
+                        <ul>
+                            <li><a href="statement" target="view_window" style="word-break:keep-all;">报表分析</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+    </div>
+    <!-- 内容 -->
+    <article class="article"
+             style="width: 86%;min-width:600px;height: 93%;position: absolute;margin-left: 200px;margin-top: 50px;">
+
+        <iframe id="iFrameSrc" src="/default" name="view_window" width="100%" height="100%"
+                style="position: absolute;margin: 0;padding: 0;"></iframe>
+
+    </article>
+
+</div>
+
+</body>
+</html>
+<script>
+    <!-- iframe内页面调用该方法 改变iframe的路径	-->
+    function changeSrc(i) {
+        $("#iFrameSrc").attr("src", i);
+    }
+
+    var top = new Vue({
+        el: "#main",
+        data: {
+            username: "",
+            role: "",
+            //学生信息管理
+            studentMage: false,
+            //就业管理
+            empMage: true,
+            //系统管理
+            sysMage: false,
+            //报表统计
+            staMage: false,
+            //面试信息地址:
+            interviewUrl: null,
+            //就业信息地址
+            StateUrl: null,
+        },
+        created() {
+            this.getRoleAndName()
+        },
+        methods: {
+            handleOpen(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            handleClose(key, keyPath) {
+                console.log(key, keyPath);
+            },
+            getRoleAndName: function () {
+                let username = $.cookie("username")
+                axios.get("/users/" + username).then((res) => {
+                    let msg = res.data;
+                    if (msg.flag) {
+                        this.username = msg.data.name;
+                        this.role = msg.data.role;
+                    }
+                    $.cookie("role", this.role, {expires: 7})
+                    if (msg.data.role === "管理员") {
+                        this.studentMage = true;
+                        this.sysMage = true;
+                        this.staMage = true;
+                    } else if (msg.data.role === "教师") {
+                        this.studentMage = true;
+                        this.staMage = true;
+                    }
+                    if (this.role !== '学生') {
+                        this.StateUrl = '/empState';
+                        this.interviewUrl = '/interview';
+                    } else {
+                        // this.StateUrl = '/StudentState?sid='+username;
+                        this.interviewUrl = "/myInterview?sid=" + username;
+                    }
+                })
+            }
+        }
+    })
+</script>
+<script>
+    //左侧选项栏的动画效果函数
+
+    function qh() {
+        $(".a_li").each(function (i) {
+            $(this).click(function () {
+                $(this).siblings("ul").slideToggle().parent().siblings("li").children("ul").slideUp();
+                // $(".a_li_li").eq(i).slideToggle().parent().children("ul").slideUp();
+            })
+        })
+    }
+
+    // $(function(){
+    // 	$(".a_li").click(function(){
+    // 		var index = $(this).index();
+    // 		$(this).siblings("ul").slideToggle().prevAll("ul").slideUp();
+    // 	})
+    // })
+    //用户登录之后切换注销功能
+    $(function () {
+        $(".success").hover(function () {
+            $(this).children("ul").stop().slideDown();
+        }, function () {
+            $(this).children("ul").stop().slideUp();
+        })
+        qh();
+    })
+</script>

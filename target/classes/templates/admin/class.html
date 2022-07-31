@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>班级信息</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/examples.css">
+    <link rel="stylesheet" href="/plugins/elementui/index.css">
+
+    <!--		<link rel="stylesheet" href="/plugins/font-awesome/css/font-awesome.min.css">-->
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+    .demo-table-expand {
+        font-size: 0;
+    }
+
+    .demo-table-expand label {
+        width: 150px;
+        color: #99a9bf;
+    }
+
+    .demo-table-expand .el-form-item {
+        margin-right: 0;
+        margin-bottom: 0;
+        width: 50%;
+    }
+</style>
+
+<body class="hold-transition">
+<div id="preloader">
+    <div id="preloader-inner"></div>
+</div>
+<div id="app" v-cloak>
+
+    <div class="content-header">
+        <h1>班级管理</h1>
+    </div>
+
+    <div class="app-container">
+
+        <div class="box">
+
+            <div class="filter-container">
+                <el-input placeholder="名称" v-model="pagination.gname" style="width: 200px;" class="filter-item">
+                </el-input>
+
+                <el-button @click="queryCondition()" class="dalfBut">查询</el-button>
+                <el-button class="dalfBut" @click="resetCondition()">重置</el-button>
+                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+
+                <el-button type="danger" size="mini" @click="delGroup()">批量删除</el-button>
+                <br><br>
+                <el-button type="dalfBut" class="dalfBut" @click="getPage">分页</el-button>
+                <el-button type="dalfBut" class="dalfBut" @click="getList">查看全部信息</el-button>
+            </div>
+            <!-- @selection-change="handleSelectionChange" -->
+            <el-table ref="multipleTable"
+                      tooltip-effect="dark"
+                      style="width: 100%"
+                      size="small"
+                      @selection-change="selsChange"
+                      current-row-key="id"
+                      :data="dataList"
+                      stripe highlight-current-row>
+
+                <el-table-column type="selection" label="全选"></el-table-column>
+
+                <el-table-column prop="gid" align="center" label="编号"></el-table-column>
+
+                <el-table-column prop="gname" label="班级名称" align="center"></el-table-column>
+
+                <el-table-column label="操作" min-width="100%" align="center">
+
+                    <template slot-scope="scope">
+
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+
+                    </template>
+
+                </el-table-column>
+
+            </el-table>
+
+
+            <!--分页组件-->
+            <div class="pagination-container" v-show="!queryAll">
+
+                <el-pagination class="pagiantion" @current-change="handleCurrentChange"
+                               :current-page="pagination.currentPage" :page-size="pagination.pageSize"
+                               layout="total, prev, pager, next, jumper" :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+
+
+            <!-- 新增标签弹层 -->
+
+            <div class="add-form" @keyup.enter="handleAdd()">
+                <el-dialog title="新增班级" :visible.sync="dialogFormVisible">
+
+                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px">
+                        <!-- 新增弹窗第一行 -->
+                        <el-row>
+
+                            <el-col :span="24">
+                                <el-form-item label="班级名称" prop="gname">
+                                    <el-input v-model="formData.gname"></el-input>
+                                </el-form-item>
+                            </el-col>
+
+                        </el-row>
+
+                    </el-form>
+
+
+                    <div slot="footer" class="dialog-footer">
+
+                        <el-button @click="Addcancel()">取消</el-button>
+
+                        <el-button type="primary" id="addClass" @click="handleAdd()">确定</el-button>
+
+                    </div>
+
+                </el-dialog>
+
+            </div>
+
+
+            <!-- 编辑标签弹层 -->
+
+            <div class="add-form" @keyup.enter="handleEdit()">
+
+                <el-dialog title="修改班级信息" :visible.sync="dialogFormVisible4Edit" @close='closeEdit'>
+
+                    <el-form key="EditForm" ref="dataEditForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px">
+
+                        <!-- 编辑弹窗第一行 -->
+                        <el-row>
+                            <el-col :span="24">
+                                <el-form-item label="班级编号" prop="gid" style="display: none">
+                                    <el-input v-model="formData.gid"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <!-- 编辑弹窗第二行 -->
+                        <el-row>
+
+                            <el-col :span="12">
+                                <el-form-item label="班级名称" prop="gname">
+                                    <el-input v-model="formData.gname"></el-input>
+                                </el-form-item>
+                            </el-col>
+
+                        </el-row>
+
+                    </el-form>
+
+                    <div slot="footer" class="dialog-footer">
+
+                        <el-button @click="Editcancel()">取消</el-button>
+
+                        <el-button type="primary" id="editClass" @click="handleEdit()">确定</el-button>
+
+                    </div>
+
+                </el-dialog>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="/js/vue.js"></script>
+<script src="/js/tableToExcel.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/xlsx.full.min.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<!--引入二维码生成的库-->
+<script src="/js/qrcode.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+    $(function(){
+        $(window).preloader({
+            delay : 15000
+        });
+    });
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            radio: 1,
+            gname: null,
+            queryAll: false,
+            dataList: [], //当前页要展示的列表数据
+            delVisible: false,//删除提示框
+            dialogVisible: false,
+            dialogFormVisible: false, //添加表单是否可见
+            dialogFormVisible4Edit: false, //编辑表单是否可见
+            formData: {}, //表单数据
+            sels: [],//多选的数据
+            rules: { //校验规则
+                gname: [{pattern: /^[\u4E00-\u9FA5A-Za-z0-9]+$/, required: true, message: '姓名为必填项', trigger: 'change'}],
+            },
+            pagination: { //分页相关模型数据
+                currentPage: 1, //当前页码
+                pageSize: 10, //每页显示的记录数
+                total: 0, //总记录数
+                gname: "", //班级名名字
+            },
+        },
+
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //调用查询全部的操作
+            this.getPage();
+
+        },
+        methods: {
+            //分页查询
+            getPage() {
+                this.queryAll = false;
+                let str = "";
+                str += "?gname=" + this.pagination.gname;
+                axios.get("/grade/list/" + this.pagination.currentPage + "/" + this.pagination.pageSize + str).then((res) => {
+                    if (res.data.flag) {
+                        ds = res.data.data.records;
+                        this.pagination.total = res.data.data.total;
+                        this.dataList = res.data.data.records;
+                        $(window).preloader({
+                            removeType : "preloader"
+                        });
+                    } else {
+                        this.$message.error(res.data.message)
+                    }
+                })
+            },
+            queryCondition() {
+                if (this.queryAll === true) {
+                    this.getList()
+                } else {
+                    this.getPage();
+                }
+            },
+            //查询全部
+            getList() {
+                this.queryAll = true;
+                let str = "";
+                str += "?gname=" + this.pagination.gname;
+                console.log(str)
+                axios.get("/grade/list/" + str).then(res => {
+                    if (res.data.flag) {
+                        ds = res.data.data;
+                        this.dataList = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message)
+                    }
+                })
+            },
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getPage();
+            },
+
+            //重置条件
+            resetCondition() {
+                this.pagination.gname = "";
+                if (this.queryAll === true) {
+                    this.getList();
+                } else {
+                    this.getPage();
+                }
+            },
+
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+
+            //弹出添加窗口   添加窗口出现 清空校验（因为和编辑共用一个表单 为了防止两个表单的校验功能冲突 所以在执行该操作）
+            handleCreate() {
+                this.dialogFormVisible = true;
+                this.$nextTick(() => {
+                    this.$refs['dataAddForm'].clearValidate();
+                })
+
+            },
+
+            //添加窗口关闭   窗口关闭后也需要清空数据 （为了良好的体验）
+            Addcancel() {
+                this.dialogFormVisible = false;
+                this.formData = {};
+                this.$message.info("当前操作取消");
+            },
+
+            //弹出编辑窗口
+            handleUpdate(row) {
+                this.gname = row.gname;
+                axios.get("/grade/" + row.gid).then(res => {
+                    if (res.data.data != null && res.data.flag) {
+                        this.dialogFormVisible4Edit = true;
+                        this.formData = res.data.data;
+                    } else {
+                        this.$message.error("数据已被修改,将自动刷新页面");
+                        if (this.queryAll === true) {
+                            this.getList();
+                        } else {
+                            this.getPage();
+                        }
+                    }
+                })
+            },
+
+            //修改窗口取消  关闭窗口清空所有的表单数据 目的是为了防止数据回显到添加的表单上
+            Editcancel() {
+                this.dialogFormVisible4Edit = false;
+                this.formData = {};
+                this.$message.info("当前操作取消");
+            },
+            closeEdit() {
+                this.dialogFormVisible4Edit = false;
+                this.formData = {};
+                if (this.queryAll === true) {
+                    this.getList();
+                } else {
+                    this.getPage();
+                }
+            },
+
+            // 删除
+            handleDelete(row) {
+                this.$confirm("是否确认删除，删除的信息该无法恢复", "警告", {type: "warning"}).then(() => {
+                    axios.delete("/grade/"+row.gid).then(res=>{
+                        if(res.data.flag){
+                            this.$message.success(res.data.message)
+                        }else {
+                            this.$message.error(res.data.message)
+                        }
+                    }).finally(()=>{
+                        if (this.queryAll === true) {
+                            this.getList();
+                        } else {
+                            this.getPage();
+                        }
+                    })
+                }).catch(()=>{
+                    this.$message.info("操作取消")
+                })
+
+            },
+
+            //批量删除 全选
+            selsChange(sels) {
+                this.sels = sels;
+            },
+
+            delGroup() {
+                if (this.sels.length !== 0) {
+                    var ids = this.sels.map(item => item.gid).toString();//获取所有选中行的id组成的字符串
+                    this.$confirm("是否确认批量删除，删除的信息该无法恢复", "警告", {type: "warning"}).then(() => {
+                        axios.delete("/grade/deletes/" + ids).then((res) => {
+                            if (res.data.flag) {
+                                this.$message.success(res.data.message)
+                            } else {
+                                this.$message.error(res.data.message)
+                            }
+                        }).finally(() => {
+                            if (this.queryAll === true) {
+                                this.getList();
+                            } else {
+                                this.getPage();
+                            }
+                        })
+                    }).catch(() => {
+                        this.$message.info("操作取消");
+                    })
+                }else {
+                    this.$message.error("请勾选要删除的项")
+                }
+            },
+
+            //添加窗口确定按钮
+            handleAdd() {
+                if(this.formData.gname!==undefined){
+                    $("#addClass").attr("disable",true)
+                    axios.post("/grade",this.formData).then(res=>{
+                        if(res.data.flag){
+                            this.$message.success(res.data.message)
+                        }else{
+                            $("#addClass").attr("disable",false)
+                            this.$message.error(res.data.message)
+                        }
+                    }).finally(() => {
+                        this.dialogFormVisible = false;
+                        this.formData = {};
+                        if (this.queryAll === true) {
+                            this.getList();
+                        } else {
+                            this.getPage();
+                        }
+                    })
+                }else {
+                    this.dialogFormVisible = false;
+                }
+
+            },
+
+
+            //修改窗口确定按钮
+            handleEdit() {
+                if (this.gname !== this.formData.gname) {
+                    $("#editClass").attr("disable",true)
+                    axios.put("/grade", this.formData).then(res => {
+                        if (res.data.flag) {
+                            this.$message.success(res.data.message)
+                        } else {
+                            $("#editClass").attr("disable",false)
+                            this.$message.error(res.data.message)
+                        }
+                    }).finally(() => {
+                        this.closeEdit();
+                        if (this.queryAll === true) {
+                            this.getList();
+                        } else {
+                            this.getPage();
+                        }
+                    })
+                }else{
+                    this.closeEdit();
+                }
+            }
+        }
+    })
+</script>
+
+</html>

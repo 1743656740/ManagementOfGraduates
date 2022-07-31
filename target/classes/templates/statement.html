@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>数据分析</title>
+    <!--这是数据分析页面的代码    -->
+    <link rel="stylesheet" href="/css/examples.css">
+    <link rel="stylesheet" type="text/css" href="/plugins/elementui/index.css">
+</head>
+<body>
+<div id="preloader">
+    <div id="preloader-inner"></div>
+</div>
+<!--把数据导出为excle表的按钮-->
+<h1 style="text-align: center">学生就业分析</h1>
+<!--把后台拿过来的数据制图-->
+<div style="width: 1200px; margin: 0 auto; margin-top: 100px" id="app">
+</div>
+<button id="but1" style="width: 75px; height: 50px;">导出</button>
+<div id="a" style="width: 1000px;height: 500px; margin: 0 auto"></div>
+<button id="but2" style="width: 75px; height: 50px; margin-top: 200px">导出</button>
+<div id="b" style="width: 1000px;height: 500px; margin: 0 auto ;"></div>
+<button id="but3" style="width: 75px; height: 50px;margin-top: 200px">导出</button>
+<div id="c" style="width: 1000px;height: 500px; margin: 0 auto ;"></div>
+</body>
+</html>
+<script src="/js/jquery.min.js"></script>
+<!--引入制图库-->
+<script src="/js/echarts.js"></script>
+<!--引入导出库-->
+<script src="/js/tableToExcel.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+    $(function(){
+        $(window).preloader({
+            delay : 15000
+        });
+    });
+    var array1 = []; //这是存储后台传来的集合内的学校名称的数组
+    var array2 = []; //这是存储后台传来的集合内的学校就业率的数组
+    var array3 = []; //这是存储后台传来的集合内的对口率的数组
+    var array4 = []; //这是存储后台传来的集合内的核心对口率的数组
+    var array5 = []; //这是存储后台传来的集合内的指导老师的数组
+    var array6 = []; //这是存储后台传来的集合内的指导老师学生就业率的数组
+    var datas1 = [];//校区就业率导出数据的数据源
+    var datas2 = [];//就业对口率导出数据的数据源
+    var datas3 = [];//指导老师的学生就业率导出数据的数据源
+    var init1 = echarts.init(document.getElementById('a'));
+    var init2 = echarts.init(document.getElementById('b'));
+    var init3 = echarts.init(document.getElementById('c'));
+    var vue = new Vue({
+        el: '#app',
+        data: {},
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //调用查询全部的操作
+            this.getAll();
+        },
+        methods: {
+            getAll() {
+                axios.get("/admin/Statement/data").then((res) => {
+                    if(res.data.data!=null){
+                        $(window).preloader({
+                            removeType : "preloader"
+                        });
+                        var i = 0;
+                        var jsons1;
+                        $.each(res.data.data[0], function (index, domEle) {
+                            array1[i] = index;
+                            array2[i] = domEle;
+                            jsons1 = {
+                                index: index + ":      " + domEle + "%"
+                            }
+                            datas1[i] = jsons1;
+                            i++;
+                            jsons1 = "";
+                            // $d是要遍历的集合
+                            // index就是索引值
+                            // domEle 表示获取遍历每一个dom 对象
+                        });
+                        //这是第一个图表
+                        // 指定图表的配置项和数据
+                        option1 = {
+                            title: {
+                                text: '校区就业率'
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b} : {c}%'
+                            },
+                            toolbox: {
+                                feature: {
+                                    dataView: { readOnly: false },
+                                    restore: {},
+                                    saveAsImage: {}
+                                }
+                            },
+                            legend: {
+                                data: array1
+                            },
+                            series: [
+                                {
+                                    name: '校区就业率',
+                                    type: 'funnel',
+                                    left: '10%',
+                                    top: 60,
+                                    bottom: 60,
+                                    width: '80%',
+                                    min: 0,
+                                    max: 100,
+                                    minSize: '0%',
+                                    maxSize: '100%',
+                                    sort: 'descending',
+                                    gap: 2,
+                                    label: {
+                                        show: true,
+                                        position: 'inside'
+                                    },
+                                    labelLine: {
+                                        length: 10,
+                                        lineStyle: {
+                                            width: 1,
+                                            type: 'solid'
+                                        }
+                                    },
+                                    itemStyle: {
+                                        borderColor: '#fff',
+                                        borderWidth: 1
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            fontSize: 20
+                                        }
+                                    },
+                                    data: [
+
+                                    ]
+                                }
+                            ]
+                        };
+                        for (var i = 0; i < array1.length; i++) {
+                            option1.series[0].data[i] = {value: array2[i],name : array1[i]}
+                        }
+                        init1.setOption(option1);
+                        //这是第二个图表
+
+                        var j = 0;
+                        var jsons2;
+                        $.each(res.data.data[1], function (index, domEle) {
+                            array3[j] = index;
+                            array4[j] = domEle;
+                            jsons2 = {
+                                index: index + ":      " + domEle + "%"
+                            }
+                            datas2[j] = jsons2;
+                            jsons2 = "";
+                            j++;
+                            // $d是要遍历的集合
+                            // index就是索引值
+                            // domEle 表示获取遍历每一个dom 对象
+                        });
+                        option2 = {
+                            title: [
+                                {
+                                    text: '学生就业对口率'
+                                }
+                            ],
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b} : {c}%'
+                            },
+                            legend: {
+                                top: '5%',
+                                left: 'center'
+                            },
+                            series: [
+                                {
+                                    name : '具体比率',
+                                    type: 'pie',
+                                    radius: ['40%', '70%'],
+                                    avoidLabelOverlap: false,
+                                    label: {
+                                        show: false,
+                                        position: 'center'
+                                    },
+                                    emphasis: {
+                                        label: {
+                                            show: true,
+                                            fontSize: '40',
+                                            fontWeight: 'bold'
+                                        }
+                                    },
+                                    labelLine: {
+                                        show: false
+                                    },
+                                    data: [
+                                    ]
+                                }
+                            ]
+                        };
+                        for (var i = 0; i < array4.length; i++) {
+                            option2.series[0].data[i] = {value: array4[i],name : array3[i]}
+                        }
+                        init2.setOption(option2);
+                        //这是第三个图表
+                        var k = 0;
+                        var jsons3;
+                        $.each(res.data.data[2], function (index, domEle) {
+                            array5[k] = index;
+                            array6[k] = domEle;
+                            jsons3 = {
+                                index: index + ":      " + domEle + "%"
+                            }
+                            datas3[k] = jsons3;
+                            jsons3 = "";
+                            k++;
+                            // $d是要遍历的集合
+                            // index就是索引值
+                            // domEle 表示获取遍历每一个dom 对象
+                        });
+                        option3 = {
+                            title: {
+                                text: '指导老师学生就业率',
+                                left: 'center'
+                            },
+                            tooltip: {
+                                trigger: 'item',
+                                formatter: '{a} <br/>{b} : {c}%'
+                            },
+                            legend: {
+                                orient: 'vertical',
+                                left: 'left'
+                            },
+                            series: [
+                                {
+                                    name: '指导老师',
+                                    type: 'pie',
+                                    radius: '50%',
+                                    data: [
+                                    ],
+                                    emphasis: {
+                                        itemStyle: {
+                                            shadowBlur: 10,
+                                            shadowOffsetX: 0,
+                                            shadowColor: 'rgba(0, 0, 0, 0.5)'
+                                        }
+                                    }
+                                }
+                            ]
+                        };
+                        for (var i = 0; i < array6.length; i++) {
+                            option3.series[0].data[i] = {value: array6[i],name : array5[i]}
+                        }
+                        init3.setOption(option3);
+
+                    }else{
+                        alert("数据出错了！");
+                    }
+                })
+            }
+        }
+    })
+    // 这里是把图1的数据导出为excel表
+    $("#but1").click(function () {
+        var arr1 = ["校区就业率"];
+        var arr2 = ["index"];
+        tableToExcel(datas1, arr1, arr2);
+        //第一个参数为需要导出的数据(JSON格式)  第二个参数为excel表的表头(数组格式)  第三个参数为 具体渲染的json对象的属性(数组格式)
+    })
+    // 这里是把图2的数据导出为excel表
+    $("#but2").click(function () {
+        var arr1 = ["就业对口率"];
+        var arr2 = ["index"];
+        tableToExcel(datas2, arr1, arr2);
+    })
+    // 这里是把图3的数据导出为excel表
+    $("#but3").click(function () {
+        var arr1 = ["指导老师的学生就业率"];
+        var arr2 = ["index"];
+        tableToExcel(datas3, arr1, arr2);
+    })
+</script>

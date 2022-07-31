@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>访问日志</title>
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+    <link rel="stylesheet" href="/css/examples.css">
+    <link rel="stylesheet" href="/plugins/elementui/index.css">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<style>
+    [v-cloak] {
+        display: none;
+    }
+</style>
+<body>
+<div id="preloader">
+    <div id="preloader-inner"></div>
+</div>
+<div id="app" v-cloak>
+    <div class="content-header">
+        <h1>访问日志</h1>
+    </div>
+    <div class="app-container">
+        <div class="box">
+            <div class="filter-container">
+                <el-button type="dalfBut" class="dalfBut" @click="getPage">分页</el-button>
+                <el-button type="dalfBut" class="dalfBut" @click="getList">查看全部信息</el-button>
+            </div>
+            <el-table ref="multipleTable"
+                      tooltip-effect="dark"
+                      style="width: 100%"
+                      size="big"
+                      :data="dataList"
+                      stripe
+                      highlight-current-row>
+                <el-table-column prop="data" label="用户访问日志" align="left"></el-table-column>
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container" v-show="!queryAll">
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+
+<script src="/js/vue.js"></script>
+
+<script src="/plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+
+<script src="/js/axios-0.18.0.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+    $(function(){
+        $(window).preloader({
+            delay : 15000
+        });
+    });
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            queryAll:false,
+            dataList: [],//当前页要展示的列表数据
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 10,//总记录数
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //调用查询全部的操作
+            this.getPage();
+        },
+
+        methods: {
+            //分页查询
+            getPage() {
+                this.queryAll = false;
+                axios.get("/admin/viewLog/" + this.pagination.currentPage + "/" + this.pagination.pageSize)
+                    .then((res) => {
+                        console.log(res.data)
+                        if (res.data.flag) {
+                            this.dataList = res.data.data.data;
+                            this.pagination.total = res.data.data.total;
+                            $(window).preloader({
+                                removeType : "preloader"
+                            });
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    });
+            },
+            // 分页？查询全部？
+            queryCondition() {
+                if (this.queryAll === true) {
+                    this.getList()
+                } else {
+                    this.getPage();
+                }
+            },
+            // 查询数据
+            getList() {
+                this.queryAll = true;
+                axios.get("/admin/viewLogAll").then(res => {
+                    if (res.data.flag) {
+                        this.dataList = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message)
+                    }
+                })
+            },
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getPage();
+            },
+
+        }
+    })
+</script>

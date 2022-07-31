@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<title>我的信息</title>
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<link rel="stylesheet" href="/css/amazeui.min.css">
+	<link rel="stylesheet" href="/css/admin.css">
+	<link rel="stylesheet" type="text/css" href="/plugins/elementui/index.css">
+	<style>
+		.admin-main {
+			padding-top: 0px;
+		}
+	</style>
+</head>
+<body>
+<div id="myinfo" v-cloak>
+	<div class="am-cf admin-main" id="addState">
+		<div class="admin-content">
+			<div class="admin-content-body">
+				<div class="am-g" style="width:65rem;">
+					<el-form :rules="rules" class="am-form am-form-horizontal" id="addStudent"
+							 method="post" style="padding-top: 30px;">
+						<input value="504" name="roleId" type="hidden">
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								姓名
+							</label>
+							<div class="am-u-sm-9">
+								<input id="sname" v-model="fromList.sname" required placeholder="请输入姓名"
+									   name="sname" type="text">
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								性别
+							</label>
+							<div class="am-u-sm-9">
+								<template>
+									<el-radio v-model="fromList.sex" label="男">男</el-radio>
+									<el-radio v-model="fromList.sex" label="女">女</el-radio>
+								</template>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								班级
+							</label>
+							<div class="am-u-sm-9">
+								<input v-model="fromList.sclass" type="text" name="sclass"
+									   placeholder="请输入班级"/>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								身份证
+							</label>
+							<div class="am-u-sm-9">
+								<input v-model="fromList.idCard" type="text" name="idCard"
+									   placeholder="请输入身份证"/>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								手机号
+							</label>
+							<div class="am-u-sm-9">
+								<input v-model="fromList.phone" type="text" name="phone"
+									   placeholder="请输入手机号"/>
+							</div>
+						</div>
+
+						<div class="am-form-group" style="cursor: pointer;">
+							<label class="am-u-sm-3 am-form-label">
+								所在校区
+							</label>
+							<!-- 2690 -->
+							<div class="am-u-sm-9" style="cursor: pointer;">
+								<el-select :disable="true" class="select" name="state" v-model="fromList.school"
+										   placeholder="请选择" @change="getSelect" id="school" style="z-index: 99;">
+									<el-option v-for="item in options" :key="item.id" :label="item.label"
+											   :value="[item.id,item.label]">
+									</el-option>
+								</el-select>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								毕业日期
+							</label>
+							<div class="am-u-sm-9">
+								<input type="date" v-model="fromList.gradDate" name="gradDate"/>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<label class="am-u-sm-3 am-form-label">
+								推荐老师
+							</label>
+							<div class="am-u-sm-9">
+								<input v-model="fromList.tname" type="text" name="tname"
+									   placeholder="请输入推荐老师"/>
+							</div>
+						</div>
+
+						<div class="am-form-group">
+							<div class="am-u-sm-9 am-u-sm-push-3">
+								<input class="am-btn am-btn-success" id="addMyinfo" @click="getAll" value="确认添加"
+									   type="button">
+							</div>
+						</div>
+					</el-form>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+<!-- 引入组件库 -->
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<!--引入二维码生成的库-->
+<script>
+	var vue = new Vue({
+		el: '#myinfo',
+		data: {
+			radio: 1,
+			fromList:{
+				sname:"",
+				sclass:"",
+				phone:"",
+				school:"",
+				gradDate:"",
+				idCard:"",
+				tname:"",
+				sex:""
+			},
+			options: [{
+				label: '北京'
+			}, {
+				label: '上海'
+			}, {
+				label: '南京'
+			}, {
+				label: '成都'
+			}, {
+				label: '深圳'
+			}, {
+				label: '广州'
+			},{
+				label: '长沙'
+			}],
+			rules: { //校验规则
+			},
+			cities: [],
+		},
+		methods:{
+			//添加窗口确定按钮
+			getAll() {
+				$("#addMyinfo").attr("disable",true)
+				axios.post("/students/studentSave", this.fromList).then((res) => {
+					if (res.data.flag) {
+						this.$message.success(res.data.message);
+						setInterval(this.jump,1500);
+					} else {
+						$("#addMyinfo").attr("disable",false)
+						this.$message.error(res.data.message);
+					}
+				})
+			},
+			getSelect: function (e) { //e代表被选中的值，即下拉框的value。由于写的是[item.id,item.label]，现在是包含2个值的数组
+				let [id, label] = e //数组解构：数组解构时数组的元素是按次序排列的，变量的取值由它的位置决定
+				this.fromList.school = label;
+			},
+			jump(){
+				location.href = "http://www.hnjdzy.net/";
+			},
+
+		},
+	})
+</script>

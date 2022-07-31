@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+	<!-- 页面meta -->
+
+	<meta charset="utf-8">
+
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>学生信息</title>
+
+	<meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+	<!-- 引入样式 -->
+	<link rel="stylesheet" href="/css/examples.css">
+	<link rel="stylesheet" href="/plugins/elementui/index.css">
+
+	<!--		<link rel="stylesheet" href="/plugins/font-awesome/css/font-awesome.min.css">-->
+
+	<link rel="stylesheet" href="/css/style.css">
+
+</head>
+<style>
+	[v-cloak] {
+		display: none;
+	}
+
+	.demo-table-expand {
+		font-size: 0;
+	}
+	.demo-table-expand label {
+		width: 150px;
+		color: #99a9bf;
+	}
+	.demo-table-expand .el-form-item {
+		margin-right: 0;
+		margin-bottom: 0;
+		width: 50%;
+	}
+</style>
+
+<body class="hold-transition">
+<div id="preloader">
+	<div id="preloader-inner"></div>
+</div>
+<div id="app" v-cloak>
+
+	<div class="content-header">
+		<h1>学生信息管理</h1>
+	</div>
+
+	<div class="app-container">
+
+		<div class="box">
+
+			<div class="filter-container">
+				<el-input placeholder="姓名" v-model="pagination.sname" style="width: 100px;" class="filter-item">
+				</el-input>
+				<el-input placeholder="身份证" v-model="pagination.idCard" style="width: 200px;"
+						  class="filter-item"></el-input>
+
+				<el-input placeholder="所在校区" v-model="pagination.school" style="width: 200px;"
+						  class="filter-item"></el-input>
+
+				<el-input placeholder="毕业日期" id="gradDate" type="text" v-model="pagination.gradDate"
+						  style="width: 200px;" class="filter-item show_placeholder"></el-input>
+
+				<el-button @click="queryCondition()" class="dalfBut">查询</el-button>
+				<el-button class="dalfBut" @click="resetCondition()">重置</el-button>
+				<el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+
+				<el-button type="primary" @click="dialogVisible = true">点击扫描二维码录入信息</el-button>
+				<el-button type="danger" size="mini" @click="delGroup()">批量删除</el-button>
+				<el-dialog title="请扫描二维码" :visible.sync="dialogVisible" width="20%" height="10%"
+						   :before-close="handleClose">
+					<!--定义两个容器，class命名的用来存放链接用，id命名的用来展示可识别的二维码-->
+					<div class="erweima">http://kalictfer.com/myInfo</div>
+					<div id="erweimaImg" style="text-align: center"></div>
+					<span slot="footer" class="dialog-footer">
+								<el-button @click="dialogVisible = false">取 消</el-button>
+								<el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+							</span>
+				</el-dialog>
+				<br><br>
+				<i style="color: red">一键导入(xlsx/xls格式文件)：</i><input type="file" id="myExcel">
+				<el-button id="outFile" type="dalfBut" class="dalfBut">导出</el-button>
+				<el-button type="dalfBut" class="dalfBut" @click="getPage">分页</el-button>
+				<el-button type="dalfBut" class="dalfBut" @click="getList">查看全部信息</el-button>
+			</div>
+			<!-- @selection-change="handleSelectionChange" -->
+			<el-table ref="multipleTable"
+					  tooltip-effect="dark"
+					  style="width: 100%"
+					  size="small"
+					  @selection-change="selsChange"
+					  current-row-key="id"
+					  :data="dataList"
+					  stripe highlight-current-row>
+
+				<el-table-column type="selection"  label="全选"></el-table-column>
+
+				<el-table-column type="expand">
+
+					<template slot-scope="props">
+						<el-form label-position="left" inline class="demo-table-expand" >
+
+							<el-form-item label="电话">
+								<span>{{ props.row.phone }}</span>
+							</el-form-item>
+
+							<el-form-item label="身份证" >
+								<span>{{ props.row.idCard}}</span>
+							</el-form-item>
+
+						</el-form>
+					</template>
+
+				</el-table-column>
+
+				<el-table-column prop="sid" align="center" label="学号"></el-table-column>
+
+				<el-table-column prop="sname"  label="姓名" align="center"></el-table-column>
+
+				<el-table-column prop="sex" label="性别" align="center"></el-table-column>
+
+				<el-table-column prop="sclass" label="班级" align="center"></el-table-column>
+
+				<el-table-column prop="school" label="所在校区" align="center"></el-table-column>
+
+				<el-table-column prop="gradDate" label="毕业日期" align="center"></el-table-column>
+
+				<el-table-column prop="tname" label="推荐老师" align="center"></el-table-column>
+
+				<el-table-column label="操作" min-width="100%" align="center">
+
+					<template slot-scope="scope" >
+
+						<el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+
+						<el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+
+					</template>
+
+				</el-table-column>
+
+			</el-table>
+
+
+
+			<!--分页组件-->
+			<div class="pagination-container" v-show="!queryAll">
+
+				<el-pagination class="pagiantion" @current-change="handleCurrentChange"
+							   :current-page="pagination.currentPage" :page-size="pagination.pageSize"
+							   layout="total, prev, pager, next, jumper" :total="pagination.total">
+
+				</el-pagination>
+
+			</div>
+
+
+			<!-- 新增标签弹层 -->
+
+			<div class="add-form" @keyup.enter="handleAdd()">
+				<el-dialog title="新增学生" :visible.sync="dialogFormVisible">
+
+					<el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right"
+							 label-width="100px">
+						<!-- 添加弹窗第一行 -->
+						<el-row>
+							<el-col :span="10">
+								<el-form-item label="姓名" prop="sname">
+									<el-input v-model="formData.sname"/>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="8">
+								<el-form-item label="性别" prop="sex" style="width: 300px;margin-left: 60px;">
+									<el-radio v-model="formData.sex" :label="1">男</el-radio>
+									<el-radio v-model="formData.sex" :label="0">女</el-radio>
+								</el-form-item>
+							</el-col>
+						</el-row>
+
+
+						<!-- 添加弹窗第二行 -->
+						<el-row>
+
+							<el-col :span="10">
+								<el-form-item label="班级" prop="sclass">
+									<el-input v-model="formData.sclass"></el-input>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="13">
+								<el-form-item label="电话" prop="phone" style="margin-left: 20px;">
+									<el-input v-model="formData.phone"/>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+						<!-- 添加弹窗第三行 -->
+						<el-row>
+
+							<el-col :span="10">
+
+								<el-form-item label="所在校区" prop="school">
+									<el-select v-model="formData.school" placeholder="请选择">
+										<el-option v-for="item in cities" :key="item.value" :label="item.label"
+												   :value="item.label">
+											<span style="float: left">{{ item.label }}</span>
+										</el-option>
+									</el-select>
+								</el-form-item>
+
+							</el-col>
+
+							<el-col :span="10">
+								<el-form-item label="毕业日期" prop="gradDate"  style="margin-left: 20px;">
+									<div class="block">
+										<el-date-picker v-model="formData.gradDate" value-format="yyyy-MM-dd" type="date" placeholder="选择日期">
+										</el-date-picker>
+									</div>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+						<!-- 添加弹窗第四行 -->
+						<el-row>
+
+							<el-col :span="10">
+								<el-form-item label="推荐老师" prop="tname">
+									<el-input v-model="formData.tname"></el-input>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="13">
+								<el-form-item label="身份证" prop="idCard" style="margin-left: 20px;">
+									<el-input v-model="formData.idCard"></el-input>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+					</el-form>
+
+
+					<div slot="footer" class="dialog-footer">
+
+						<el-button @click="Addcancel()" >取消</el-button>
+
+						<el-button type="primary" id="addStudent" @click="handleAdd()">确定</el-button>
+
+					</div>
+
+				</el-dialog>
+
+			</div>
+
+
+
+			<!-- 编辑标签弹层 -->
+
+			<div class="add-form" @keyup.enter="handleEdit()">
+
+				<el-dialog title="修改学生信息" :visible.sync="dialogFormVisible4Edit"  @close='closeEdit'>
+
+					<el-form key="EditForm"  ref="dataEditForm" :model="formData" :rules="rules" label-position="right"
+							 label-width="100px">
+
+						<!-- 编辑弹窗第一行 -->
+						<el-row>
+							<el-col :span="10">
+								<el-form-item label="姓名" prop="sname">
+									<el-input v-model="formData.sname"/>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="8">
+								<el-form-item label="性别" prop="sex" style="width: 230px;margin-left: 60px;">
+									<el-radio v-model="formData.sex" :label="1">男</el-radio>
+									<el-radio v-model="formData.sex" :label="0">女</el-radio>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+						<!-- 编辑弹窗第二行 -->
+						<el-row>
+
+							<el-col :span="10">
+								<el-form-item label="班级" prop="sclass">
+									<el-input v-model="formData.sclass"></el-input>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="13">
+								<el-form-item label="电话" prop="phone" style="margin-left: 20px;">
+									<el-input v-model="formData.phone" />
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+						<!-- 编辑弹窗第三行 -->
+						<el-row>
+
+							<el-col :span="10">
+
+								<el-form-item label="所在校区" prop="school">
+									<el-select v-model="formData.school" placeholder="请选择校区">
+										<el-option v-for="item in cities" :key="item.value" :label="item.label"
+												   :value="item.label">
+											<span style="float: left">{{ item.label }}</span>
+										</el-option>
+									</el-select>
+								</el-form-item>
+
+							</el-col>
+
+							<el-col :span="10">
+								<el-form-item label="毕业日期" prop="gradDate"  style="margin-left: 20px;">
+									<div class="block">
+										<el-date-picker v-model="formData.gradDate" value-format="yyyy-MM-dd" type="date" placeholder="选择日期">
+										</el-date-picker>
+									</div>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+
+						<!-- 编辑弹窗第四行 -->
+						<el-row>
+
+							<el-col :span="10">
+								<el-form-item label="推荐老师" prop="tname">
+									<el-input v-model="formData.tname"></el-input>
+								</el-form-item>
+							</el-col>
+
+							<el-col :span="13">
+								<el-form-item label="身份证" prop="idCard" style="margin-left: 20px;">
+									<el-input v-model="formData.idCard"></el-input>
+								</el-form-item>
+							</el-col>
+
+						</el-row>
+
+					</el-form>
+
+					<div slot="footer" class="dialog-footer">
+
+						<el-button @click="Editcancel()">取消</el-button>
+
+						<el-button type="primary" id="editStudent" @click="handleEdit()">确定</el-button>
+
+					</div>
+
+				</el-dialog>
+
+			</div>
+
+		</div>
+
+	</div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="/js/vue.js"></script>
+<script src="/js/tableToExcel.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/xlsx.full.min.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<!--引入二维码生成的库-->
+<script src="/js/qrcode.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+	$(function(){
+		$(window).preloader({
+			delay : 15000
+		});
+	});
+	var ds;
+	var i = 0;
+	$(function (){
+		$("#outFile").click(function (){
+			if(!confirm("确认导出信息?")){
+				return false;
+			}
+			var arr1 = ["学号","姓名","性别","班级","所在校区","毕业日期","推荐老师","电话号码","身份证"];
+			var arr2 = [];
+			$.each(ds[0],function (index,domEle){
+				if(i != 9){
+					arr2.push(index);
+					i++;
+				}
+
+			})
+			i=0;
+			console.log(arr2);
+			tableToExcel(ds,arr1,arr2);
+			//第一个参数为需要导出的数据(JSON格式)  第二个参数为excel表的表头(数组格式)  第三个参数为 具体渲染的json对象的属性(数组格式)
+		})
+	})
+
+
+	$(".erweima").qrcode({ //选择存放链接容器
+		width: 200, //width height如果不写默认是 256 256
+		height: 200,
+		text: $('.erweima').html() //将链接容器的内容赋值给text
+	});
+
+	//定义方法
+	function canvasToImage(canvas) {
+		var image = new Image();
+		// 指定格式 PNG 图片后缀可自定义
+		image.src = canvas.toDataURL("image/png");
+		return image;
+	}
+
+	//找到需要转换的canvas
+	var mycanvas1 = document.getElementsByTagName('canvas')[0];
+	//进行方法转换
+	var img = canvasToImage(mycanvas1);
+	//将转换后的img标签插入到显示容器中
+	$('#erweimaImg').append(img);
+	$(".erweima").hide();
+
+	var vue = new Vue({
+		el: '#app',
+		data: {
+			radio: 1,
+			queryAll:false,
+			dataList: [], //当前页要展示的列表数据
+			delVisible:false,//删除提示框
+			dialogVisible: false,
+			dialogFormVisible: false, //添加表单是否可见
+			dialogFormVisible4Edit: false, //编辑表单是否可见
+			formData: {
+				sname:"",
+				sclass:"",
+				phone:"",
+				school:"",
+				gradDate:"",
+				idCard:"",
+				tname:"",
+				sex:""
+
+			}, //表单数据
+			sels:[],//多选的数据
+			rules: { //校验规则
+				sname: [{pattern:/^[\u4E00-\u9FA5A-Za-z0-9]+$/, required: true, message: '姓名为必填项', trigger: 'change'}],
+				sclass: [{
+					required: true,
+					message: '班级为必填项',
+					trigger: 'change'
+				}],
+				phone: [{pattern:/^((0\d{2,3}-\d{7,8})|(1[34578]\d{9}))$/,required: true, message: '请输入正确手机号', trigger:'change'}],
+				school: [{required: true, message: '请选择校区', trigger: 'change'}],
+				gradDate: [{
+					required: true,
+					trigger: 'change',
+					message: '请选择毕业日期'
+				}],
+				idCard:
+						[{pattern:/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/, trigger: 'change', required: true, message: '请输入正确的身份证'}],
+				tname: [{
+					required: true,
+					message: '推荐老师不能为空',
+					trigger: 'change',
+				}],
+				sex:[{
+					required: true,
+					message: '请选择性别',
+					trigger: 'blur',
+				}]
+
+			},
+			pagination: { //分页相关模型数据
+				currentPage: 1, //当前页码
+				pageSize: 10, //每页显示的记录数
+				total: 0, //总记录数
+				sname: "", //名字
+				idCard: "", //身份证
+				school: "", //学校
+				gradDate:""//毕业日期
+			},
+			cities: [{
+				label: '北京'
+			}, {
+				label: '上海'
+			}, {
+				label: '南京'
+			}, {
+				label: '成都'
+			}, {
+				label: '深圳'
+			}, {
+				label: '广州'
+			},{
+				label: '长沙'
+			}],
+
+			value: ''
+		},
+
+
+		//钩子函数，VUE对象初始化完成后自动执行
+		created() {
+			//调用查询全部的操作
+			this.getPage();
+
+		},
+		methods: {
+			//分页查询
+			getPage() {
+				this.queryAll=false;
+				let str = "";
+				// console.log(this.pagination)
+				str += "?sname=" + this.pagination.sname;
+				str += "&idCard=" + this.pagination.idCard;
+				str += "&school=" + this.pagination.school;
+				str += "&gradDate=" + this.pagination.gradDate;
+				axios.get("/students/" + this.pagination.currentPage + "/" + this.pagination.pageSize + str).then((res) => {
+					if(res.data.flag){
+						ds = res.data.data.records;
+						this.pagination.total = res.data.data.total;
+						this.dataList = res.data.data.records;
+						$(window).preloader({
+							removeType : "preloader"
+						});
+					}else{
+						this.$message.error(res.data.message)
+					}
+				})
+			},
+			queryCondition(){
+				if(this.queryAll===true){
+					this.getList()
+				}else {
+					this.getPage();
+				}
+			},
+			//查询全部
+			getList(){
+				this.queryAll = true;
+				let str = "";
+				str += "?sname=" + this.pagination.sname;
+				str += "&idCard=" + this.pagination.idCard;
+				str += "&school=" + this.pagination.school;
+				str += "&gradDate=" + this.pagination.gradDate;
+				console.log(str)
+				axios.get("/students/"+str).then(res=>{
+					if(res.data.flag){
+						ds = res.data.data;
+						this.dataList = res.data.data;
+					}else {
+						this.$message.error(res.data.message)
+					}
+				})
+			},
+
+			//切换页码
+			handleCurrentChange(currentPage) {
+				console.log(this.pagination.currentPage);
+				this.pagination.currentPage = currentPage;
+				this.getPage();
+			},
+
+			//重置条件
+			resetCondition() {
+				this.pagination.sname = "";
+				this.pagination.idCard = "";
+				this.pagination.school = "";
+				this.pagination.gradDate = "";
+				if(this.queryAll===true){
+					this.getList();
+				}else{
+					this.getPage();
+				}
+			},
+
+			//重置表单
+			resetForm() {
+				this.formData = {};
+			},
+			//弹出二维码
+			handleClose(done) {
+				done();
+			},
+
+			//弹出添加窗口   添加窗口出现 清空校验（因为和编辑共用一个表单 为了防止两个表单的校验功能冲突 所以在执行该操作）
+			handleCreate() {
+				this.dialogFormVisible = true;
+				// this.$refs['dataAddForm'].resetFields();
+				this.$nextTick(() => {
+					this.$refs['dataAddForm'].clearValidate();
+				})
+
+			},
+
+			//添加窗口关闭   窗口关闭后也需要清空数据 （为了良好的体验）
+			Addcancel() {
+				this.dialogFormVisible = false;
+				this.formData={};
+				this.$message.info("当前操作取消");
+			},
+
+			//弹出编辑窗口
+			handleUpdate(row) {
+				axios.get("/students/"+row.sid).then(res=>{
+					if(res.data.data !=null && res.data.flag){
+						this.dialogFormVisible4Edit=true;
+						this.formData =res.data.data;
+						if(this.formData.sex === '男'){
+							this.formData.sex = 1;
+						}else{
+							this.formData.sex = 0;
+						}
+					}else {
+						this.$message.error("数据已被修改,将自动刷新页面");
+						if(this.queryAll===true){
+							this.getList();
+						}else{
+							this.getPage();
+						}
+					}
+				})
+			},
+
+			//修改窗口取消  关闭窗口清空所有的表单数据 目的是为了防止数据回显到添加的表单上
+			Editcancel() {
+				this.dialogFormVisible4Edit = false;
+				this.formData={};
+				this.$message.info("当前操作取消");
+			},
+			closeEdit(){
+				this.dialogFormVisible4Edit = false;
+				this.formData={};
+				if(this.queryAll===true){
+					this.getList();
+				}else{
+					this.getPage();
+				}
+			},
+
+			// 删除
+			handleDelete(row) {
+				console.log(row.sid);
+				this.$confirm("是否确认删除，删除该信息该无法恢复","警告",{type:"warning"}).then(()=>{
+					axios.delete("/students/"+row.sid).then((res)=>{
+						if (res.data.flag){
+							this.$message.success(res.data.message)
+						}else{
+							this.$message.error(res.data.message)
+						}
+					}).finally(()=>{
+						if(this.queryAll===true){
+							this.getList();
+						}else{
+							this.getPage();
+						}
+					})
+				}).catch(()=>{
+					this.$message.info("操作取消");
+				})
+
+			},
+
+
+			//批量删除 全选
+			selsChange(sels) {
+				this.sels = sels;
+				// console.log(this.sels);
+			},
+
+			delGroup() {
+				var ids = this.sels.map(item => item.sid).toString();//获取所有选中行的id组成的字符串
+				this.$confirm("是否确认批量删除，删除的信息该无法恢复","警告",{type:"warning"}).then(()=>{
+
+					if(ids != "") {
+						axios.delete("/students/deleteByIds/" + ids).then((res) => {
+							if (res.data.flag) {
+								this.$message.success(res.data.message)
+							} else {
+								this.$message.error(res.data.message)
+							}
+						}).finally(() => {
+							if(this.queryAll===true){
+								this.getList();
+							}else{
+								this.getPage();
+							}
+						})
+					}else{
+						this.$message.error("请勾选要删除的数据");
+					}
+				}).catch(()=>{
+					this.$message.info("操作取消");
+				})
+
+			},
+
+			//添加窗口确定按钮
+			handleAdd() {
+				// let _this = this;
+				// 执行校验
+				this.$refs['dataAddForm'].validate(valid => {
+					// 验证通过为true，有一个不通过就是false
+					if (valid) {
+						console.log(this.formData)
+						if (this.formData.sex===1){
+							this.formData.sex = "男";
+						}else {
+							this.formData.sex = "女";
+						}
+						$("#addStudent").attr("disable",true)
+						axios.post("/students/studentSave", this.formData).then((res) => {
+							if (res.data.flag) {
+								this.$message.success(res.data.message);
+								this.dialogFormVisible = false;
+								this.formData = {};
+								if(this.queryAll===true){
+									this.getList();
+								}else{
+									this.getPage();
+								}
+							} else {
+								$("#addStudent").attr("disable",false)
+								this.$message.error(res.data.message);
+							}
+						}).finally(() => {
+
+						});
+					} else {
+						// 没通过校验
+						this.$message.error('验证失败');
+						return false;
+					}
+				})
+			},
+
+
+			//修改窗口确定按钮
+			handleEdit() {
+				this.$refs['dataEditForm'].validate(valid => {
+					if(valid){
+						if(this.formData.sex == 1){
+							this.formData.sex = "男";
+						}else{
+							this.formData.sex = "女";
+						}
+						this.$confirm("是否确认修改?","提示",{type: 'info'}).then((res)=>{
+							$("#editStudent").attr("disable",true)
+							axios.put("/students",this.formData).then((res)=>{
+								if (res.data.flag){
+									this.$message.success(res.data.message)
+									$("#editStudent").attr("disable",false)
+									if(this.queryAll===true){
+										this.getList();
+									}else{
+										this.getPage();
+									}
+									this.dialogFormVisible4Edit = false;
+								}else{
+									this.$message.error(res.data.message)
+								}
+							}).finally(()=>{
+
+							});
+						}).catch(()=>{
+							this.$message.info("操作取消");
+						})
+					}else{
+						this.$message.error('验证失败');
+						return false;
+					}
+				})
+			}
+		}
+
+
+	})
+</script>
+
+<script>
+	//下面这个函数是拿来给excel表格里面的时间格式转换的 excel存的时间传给前台之后会转为5位的数字
+	function formatExcelTime(num) {
+		num = Number(num);  // 强制类型转化，以防传来的值是字符串
+		let millisecond = 0;  // 转化后的毫秒数
+		if (num > 60) {
+			millisecond = (num - 25569) * 60 * 60 * 24 * 1000;
+		} else {
+			millisecond = (num - 25568) * 60 * 60 * 24 * 1000;
+		}
+		let date = new Date(millisecond); // 根据转化后的毫秒数获取对应的时间
+		let yy = date.getFullYear();
+		let mm = date.getMonth() + 1 < 10 ? '0' + (date.getMonth() + 1) : date.getMonth() + 1;
+		let dd = date.getDate() < 10 ? '0' + date.getDate() : date.getDate();
+		return yy + '-' + mm + '-' + dd;  // 返回格式化后的日期
+	}
+	var array =[];//接收文件内的数据
+	var jsonArrayList = [];//这是存最终传到后端的json对象的数组
+	var k = 0; //这个变量控制jsonArrayList存储对象的下标
+	//下面两个变量控制json对象的每一个键值对是否跟数据库一一对应
+	var isOk = [0,0,0,0,0,0,0,0];
+	var strNo = ""; //这个变量接收哪个json对象无法导入到数据库内
+	window.onload=function(){
+		$('#myExcel').change(function(e) {
+			var excelListData = [];
+			var files = e.target.files; //这里获取的是上传的文件对象数组
+			//这里是判断上传的文件格式  如果为xlsx 或xls 格式的文件 就上传成功 否则失败
+			var filesuffixs = files[0].name.split(".")[1]; //这是获取上传文件的后缀名的
+			if(filesuffixs == "xlsx" || filesuffixs == "xls"){  //如果文件格式为xlsx/xls 就开始读取文件内数据
+				var fileReader = new FileReader();
+				fileReader.onload = function(ev) {
+					try {
+						var data = ev.target.result,
+								// 以二进制流方式读取得到整份excel表格对象
+								workbook = XLSX.read(data, {
+									type: 'binary'
+								}),
+								// 存储获取到的数据
+								excelListData = [];
+					} catch (e) {
+						alert('文件类型不正确');
+						return;
+					}
+					// 遍历每张表读取
+					for (var sheet in workbook.Sheets) {
+						if (workbook.Sheets.hasOwnProperty(sheet)) {
+							fromTo = workbook.Sheets[sheet]['!ref'];
+							excelListData  = excelListData.concat(XLSX.utils.sheet_to_json(workbook.Sheets[sheet]));
+							// break; // 如果只取第一张表，就取消注释这行
+						}
+					}
+					array = excelListData;// 当前为表格转化后的数据 赋值给自己声明的array数组存储
+					//这里判断数组内的json对象格式是否与数据库内字段一致 不一致也会导致上传失败 告诉用户失败原因
+					//利用了双重判断  一个为isOK数组内的值的判断 一个为json对象键值对的数量判断
+					for (var i = 0; i < array.length; i++) { //遍历json对象数组
+						var num = 0; // 这个变量判断json对象的键值对是否与数据库字段个数一致 9为一致(视自己表结构设置)
+						for(var key in array[i]){ //对每一个json对象的键进行判断
+							//在这个switch里面对每次循环的键和值进行校验
+							// console.log(key); //这是获取json对象的键
+							// console.log(array[i][key]);//这是获取json对象的键对应的值
+
+							switch (key){
+								case "sname" : typeof array[i][key]=='string'?isOk[0]++:1+1;break;
+								case "idCard" : typeof array[i][key]=='string'?isOk[1]++:1+1;break;
+								case "sex" : typeof array[i][key]=='string'?isOk[2]++:1+1;break;
+								case "sclass" : typeof array[i][key]=='string'?isOk[3]++:1+1;break;
+								case "school" : typeof array[i][key]=='string'?isOk[4]++:1+1;break;
+								case "phone" : typeof array[i][key]=='number'?isOk[5]++:1+1;break;
+								case "tname" :  typeof array[i][key]=='string'?isOk[6]++:1+1;break;
+								case "gradDate" : typeof array[i][key]!='string'?isOk[7]++:1+1;
+									array[i][key] = formatExcelTime(array[i][key]);break;
+							}
+							num++;
+						}
+
+						//在这里判断该对象的键值对是否与数据库字段匹配  不匹配就不添加到对象数组内
+						for (var j = 0; j < isOk.length; j++) {
+							if(isOk[j] != 1 || num > 9){
+								num = 403; //如果判断值有不等于1的值就说明文件不规范 不予添加到数据库
+							}
+							isOk[j] = 0; //这里对每一个判断的值重新赋值进行二次读取json对象循环
+						}
+						if(num==8){
+							jsonArrayList[k] = array[i];
+							k++; //对象与数据库字段一致 就把该json对象添加到jsonArrayList数组内 k值+1
+						}else{
+							strNo +=i+1;
+						}
+					}
+					console.log(jsonArrayList[0].gradDate);
+					if(jsonArrayList.length>0){
+						// 在这里把数据传到后台录入数据库
+						axios.post("/students/save",jsonArrayList).then(res=>{
+							alert(res.data.message);
+							location.reload();
+						})
+					}
+					if(strNo.length>0){
+						alert("第"+strNo+"条数据不符合上传规定，请重新编辑上传");
+					}
+				};
+				// 使用文件流 以二进制方式打开文件
+				fileReader.readAsBinaryString(files[0]); //关键代码 少了它  数据拿不到
+			}else{
+				alert("上传文件格式不对,请重新上传");
+			}
+		});
+	}
+</script>
+
+</html>

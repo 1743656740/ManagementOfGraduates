@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+    <!-- 页面meta -->
+
+    <meta charset="utf-8">
+
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>用户信息</title>
+
+    <meta content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" name="viewport">
+
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="/css/examples.css">
+    <link rel="stylesheet" href="/plugins/elementui/index.css">
+
+    <link rel="stylesheet" href="/plugins/font-awesome/css/font-awesome.min.css">
+
+    <link rel="stylesheet" href="/css/style.css">
+
+</head>
+<style>
+    [v-cloak] {
+        display: none;
+    }
+
+</style>
+
+<body class="hold-transition">
+<div id="preloader">
+    <div id="preloader-inner"></div>
+</div>
+<div id="app" v-cloak>
+
+    <div class="content-header">
+        <h1>用户信息管理</h1>
+    </div>
+
+    <div class="app-container">
+
+        <div class="box">
+
+            <div class="filter-container">
+                <el-input placeholder="姓名" v-model="pagination.name" style="width: 200px;"
+                          class="filter-item"></el-input>
+                <el-button @click="queryCondition()" class="dalfBut">查询</el-button>
+                <el-button class="dalfBut" @click="resetCondition()">重置</el-button>
+                <el-button type="primary" class="butT" @click="handleCreate()">新建</el-button>
+                <el-button type="danger" size="mini" @click="manyDelete">删除</el-button>
+                <el-button type="primary" @click="dialogVisible = true">点击扫描二维码录入信息</el-button>
+                <el-dialog title="请扫描二维码" :visible.sync="dialogVisible" width="20%" height="10%"
+                           :before-close="handleClose">
+                    <!--定义两个容器，class命名的用来存放链接用，id命名的用来展示可识别的二维码-->
+                    <div class="erweima">https://www.baidu.com/</div>
+                    <div id="erweimaImg" style="text-align: center"></div>
+                    <span slot="footer" class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取 消</el-button>
+                        <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+                    </span>
+                </el-dialog>
+                <el-button type="dalfBut" class="dalfBut" @click="getPage">分页</el-button>
+                <el-button type="dalfBut" class="dalfBut" @click="getList">查看全部信息</el-button>
+            </div>
+
+            <el-table ref="multipleTable"
+                      tooltip-effect="dark"
+                      style="width: 100%"
+                      @select="itemHandleSelectionChange"
+                      size="small"
+                      @selection-change="selsChange"
+                      :data="dataList"
+                      stripe
+                      highlight-current-row>
+                <!--ID 姓名  学生就业状态 目前实习单位 学生就业岗位  当前薪资 就业照片  就业城市 -->
+                <!-- <el-table-column prop="name" label="姓名"  align="center"></el-table-column> -->
+                <el-table-column type="selection"></el-table-column>
+                <el-table-column prop="id" label="账号编号" align="center"></el-table-column>
+                <el-table-column prop="username" label="账号" align="center"></el-table-column>
+                <el-table-column prop="password" label="密码" align="center"></el-table-column>
+                <el-table-column prop="name" label="名字" align="center"></el-table-column>
+                <el-table-column prop="nickName" label="职业" align="center"></el-table-column>
+                <el-table-column prop="roles" label="权限等级 " align="center"></el-table-column>
+                <el-table-column label="操作" align="center">
+                    <template slot-scope="scope">
+                        <el-button type="primary" size="mini" @click="handleUpdate(scope.row)">编辑</el-button>
+                        <el-button type="danger" size="mini" @click="handleDelete(scope.row)">删除</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+
+            <!--分页组件-->
+            <div class="pagination-container" v-show="!queryAll">
+
+                <el-pagination
+                        class="pagiantion"
+
+                        @current-change="handleCurrentChange"
+
+                        :current-page="pagination.currentPage"
+
+                        :page-size="pagination.pageSize"
+
+                        layout="total, prev, pager, next, jumper"
+
+                        :total="pagination.total">
+
+                </el-pagination>
+
+            </div>
+
+            <!-- 添加用户 -->
+            <div class="add-form" @keyup.enter="handleAdd()">
+                <el-dialog title="添加用户" :visible.sync="dialogFormVisible">
+                    <el-form ref="dataAddForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px">
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="账号" prop="username">
+                                    <el-input type="text" v-model="formData.username"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="密码" prop="password">
+                                    <el-input type="text" v-model="formData.password"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="名字" prop="name">
+                                    <el-input type="text" v-model="formData.name"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="职业" prop="nickName">
+                                    <el-input type="text" v-model="formData.nickName"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="30">
+                                <el-form-item label="账号等级" prop="roles">
+                                    <el-select v-model="formData.roles" placeholder="请选择">
+                                        <el-option
+                                                v-for="item in dj"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                            <span style="float: left">{{ item.label }}</span>
+                                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value
+                                                }}</span>
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" id="addUser" @click="handleAdd()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+
+            <!-- 编辑 -->
+            <div class="add-form" @keyup.enter="handleEdit()">
+                <el-dialog title="修改账号信息" :visible.sync="dialogFormVisible4Edit">
+                    <el-form ref="dataEditForm" :model="formData" :rules="rules" label-position="right"
+                             label-width="100px">
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="账号" prop="username">
+                                    <el-input type="text" v-model="formData.username"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="密码" prop="password">
+                                    <el-input type="text" v-model="formData.password"
+                                              @change="changePassword"></el-input>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="名字" prop="name">
+                                    <el-input type="text" v-model="formData.name"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="20">
+                                <el-form-item label="职业" prop="nickName">
+                                    <el-input type="text" v-model="formData.nickName"/>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+
+                        <el-row>
+                            <el-col :span="30">
+                                <el-form-item label="账号等级" prop="roles">
+                                    <el-select v-model="formData.roles" placeholder="请选择">
+                                        <el-option
+                                                v-for="item in dj"
+                                                :key="item.value"
+                                                :label="item.label"
+                                                :value="item.value">
+                                            <span style="float: left">{{ item.label }}</span>
+                                            <span style="float: right; color: #8492a6; font-size: 13px">{{ item.value
+                                                }}</span>
+                                        </el-option>
+                                    </el-select>
+                                </el-form-item>
+                            </el-col>
+                        </el-row>
+                    </el-form>
+                    <div slot="footer" class="dialog-footer">
+                        <el-button @click="cancel()">取消</el-button>
+                        <el-button type="primary" id="editUser" @click="handleEdit()">确定</el-button>
+                    </div>
+                </el-dialog>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+
+<!-- 引入组件库 -->
+
+<script src="/js/vue.js"></script>
+
+<script src="/plugins/elementui/index.js"></script>
+
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+
+<script src="/js/axios-0.18.0.js"></script>
+<!--引入二维码生成的库-->
+<script src="/js/qrcode.js"></script>
+<script src="/js/jquery.preloader.min.js"></script>
+<script>
+    $(function(){
+        $(window).preloader({
+            delay : 15000
+        });
+    });
+    $(".erweima").qrcode({   //选择存放链接容器
+        width: 200, //width height如果不写默认是 256 256
+        height: 200,
+        text: $('.erweima').html() //将链接容器的内容赋值给text
+    });
+
+    //定义方法
+    function canvasToImage(canvas) {
+        var image = new Image();
+        // 指定格式 PNG 图片后缀可自定义
+        image.src = canvas.toDataURL("image/png");
+        return image;
+    }
+
+    //找到需要转换的canvas
+    var mycanvas1 = document.getElementsByTagName('canvas')[0];
+    //进行方法转换
+    var img = canvasToImage(mycanvas1);
+    //将转换后的img标签插入到显示容器中
+    $('#erweimaImg').append(img);
+    $(".erweima").hide();
+    var vue = new Vue({
+        el: '#app',
+        data: {
+            queryAll: false,
+            deleteList: [],//获取要删除的对象--->多个
+            deleteListId: [],//获取要删除的对象的id--->多个
+            dj: [{
+                value: '管理员',
+                label: '管理员'
+            }, {
+                value: '教师',
+                label: '教师'
+            }, {
+                value: '学生',
+                label: '学生'
+            }],
+            updatePassword: null,//更新后密码
+            dataList: [],//当前页要展示的列表数据
+            dialogVisible: false,
+            dialogFormVisible: false,//添加表单是否可见
+            dialogFormVisible4Edit: false,//编辑表单是否可见
+            formData: {},//表单数据
+            rules: {//校验规则
+                // type: [{required: true, message: '图书类别为必填项', trigger: 'blur'}],
+                // name: [{required: true, message: '图书名称为必填项', trigger: 'blur'}]
+            },
+            pagination: {//分页相关模型数据
+                currentPage: 1,//当前页码
+                pageSize: 10,//每页显示的记录数
+                total: 10,//总记录数
+                name: "",//名称
+            }
+        },
+
+        //钩子函数，VUE对象初始化完成后自动执行
+        created() {
+            //调用查询全部的操作
+            this.getPage();
+        },
+
+        methods: {
+            // 获取是否选中
+            itemHandleSelectionChange(selection, row) {
+                this.deleteList = selection;
+                let selected = selection.length && selection.indexOf(row) !== -1
+            },
+            //全选,取消选择
+            toggleSelection(rows) {
+                if (rows) {
+                    rows.forEach(row => {
+                        this.$refs.multipleTable.toggleRowSelection(row);
+                    });
+                } else {
+                    this.$refs.multipleTable.clearSelection();
+                }
+            },
+            handleSelectionChange(val) {
+                //val 为选中数据的集合
+                this.multipleSelection = val;
+            },
+            //弹出二维码
+            handleClose(done) {
+                done()
+            },
+            //分页查询
+            getPage() {
+                this.queryAll = false;
+                axios.get("/users/select/" + this.pagination.currentPage + "/" + this.pagination.pageSize + "?name=" + this.pagination.name)
+                    .then((res) => {
+                        if (res.data.flag) {
+                            this.dataList = res.data.data.records;
+                            this.pagination.total = res.data.data.total;
+                            $(window).preloader({
+                                removeType : "preloader"
+                            });
+                        } else {
+                            this.$message.error(res.data.message);
+                        }
+                    });
+            },
+            queryCondition() {
+                if (this.queryAll === true) {
+                    this.getList()
+                } else {
+                    this.getPage();
+                }
+            },
+            getList() {
+                this.queryAll = true;
+                console.log(this.pagination)
+                let str = "?name=" + this.pagination.name;
+                console.log(str)
+                axios.get("/users/queryAll/" + str).then(res => {
+                    if (res.data.flag) {
+                        this.dataList = res.data.data;
+                    } else {
+                        this.$message.error(res.data.message)
+                    }
+                })
+            },
+
+            //切换页码
+            handleCurrentChange(currentPage) {
+                this.pagination.currentPage = currentPage;
+                this.getPage();
+            },
+            //弹出添加窗口
+            handleCreate() {
+                this.dialogFormVisible = true;
+                this.resetForm();
+            },
+
+            //重置条件
+            resetCondition() {
+                this.pagination.name = "";
+                if (this.queryAll === true) {
+                    this.getList();
+                } else {
+                    this.getPage();
+                }
+            },
+            //重置表单
+            resetForm() {
+                this.formData = {};
+            },
+
+            //添加
+            handleAdd() {
+                // 执行校验
+                this.$refs['dataAddForm'].validate(valid => {
+                    if (valid) {
+                        $("#addUser").attr("disable",true)
+                        axios.post("/users/insert", this.formData).then((res) => {
+                            if (res.data.flag) {
+                                this.$message.success(res.data.message);
+                            } else {
+                                this.$message.error(res.data.message);
+                            }
+                        }).finally(() => {
+                            $("#addUser").attr("disable",false)
+                            this.dialogFormVisible = false;
+                            if (this.queryAll === true) {
+                                this.getList();
+                            } else {
+                                this.getPage();
+                            }
+                        });
+                    } else {
+                        // 没通过校验
+                        this.$message.error('验证失败');
+                        return false;
+                    }
+                })
+            },
+
+            //取消
+            cancel() {
+                this.dialogFormVisible = false;
+                this.dialogFormVisible4Edit = false;
+                this.$message.info("当前操作取消");
+            },
+            // 删除
+            handleDelete(row) {
+                this.$confirm("确定要删除吗？不可撤回", "警告", {type: "warning"})
+                    .then(() => {
+                        axios.delete("/users/deleteByid/" + row.id).then((res) => {
+                            if (res.data.flag) {
+                                this.$message.success(res.data.message)
+                            } else {
+                                this.$message.error(res.data.message)
+                            }
+                        })
+                    }).catch(() => {
+                    this.$message.info("操作取消");
+                }).finally(() => {
+                    if (this.queryAll === true) {
+                        this.getList();
+                    } else {
+                        this.getPage();
+                    }
+                })
+            },
+            // 批量删除
+            manyDelete() {
+
+                if(this.deleteList.length!==0){
+                    // 获取学号数组
+                    for (let i = 0; i < this.deleteList.length; i++) {
+                        this.deleteListId[i] = this.deleteList[i].id;
+                    }
+                    let ids = this.deleteListId.toString();
+                    // 遍历学号数组
+                    this.$confirm("确定要删除吗？不可撤回", "警告", {type: "warning"})
+                        .then(() => {
+                            axios.delete("/users/deleteByIds/" + ids).then((res) => {
+                                if (res.data.flag) {
+                                    this.$message.success(res.data.message)
+                                } else {
+                                    this.$message.error(res.data.message)
+                                }
+                            }).finally(() => {
+                                if (this.queryAll === true) {
+                                    this.getList();
+                                } else {
+                                    this.getPage();
+                                }
+                            })
+                        }).catch(() => {
+                        this.$message.info("操作取消");
+                    })
+                }else {
+                    this.$message.error("请选择你要删除的项")
+                }
+
+            },
+            //密码改变
+            changePassword() {
+                this.updatePassword = this.formData.password;
+                console.log(this.updatePassword)
+            },
+            //弹出编辑窗口
+            handleUpdate(row) {
+                axios.get("/users/UserByid/" + row.id).then(res => {
+                    if (res.data.data != null && res.data.flag) {
+                        this.dialogFormVisible4Edit = true;
+                        this.formData = res.data.data;
+                    } else {
+                        this.$message.error("数据已被修改,将自动刷新页面");
+                        if (this.queryAll === true) {
+                            this.getList();
+                        } else {
+                            this.getPage();
+                        }
+                    }
+                })
+            },
+
+            //批量删除 全选
+            selsChange(sels) {
+                this.sels = sels;
+                // console.log(this.sels);
+            },
+
+            //修改窗口确定按钮
+            handleEdit() {
+                this.$refs['dataEditForm'].validate(valid => {
+                    if (valid) {
+                        var object1 =
+                            {
+                                id: this.formData.id,
+                                username: this.formData.username,
+                                password: this.formData.password,
+                                name: this.formData.name,
+                                nickName: this.formData.nickName,
+                                roles: this.formData.roles,
+                            };
+                        if (this.updatePassword == null) {
+                            Reflect.deleteProperty(object1,"password")
+                        }
+                        this.$confirm("是否确认修改?", "提示", {type: 'info'}).then((res) => {
+                            $("#editUser").attr("disable",true)
+                            axios.put("/users/editUser", object1).then((res) => {
+                                if (res.data.flag) {
+                                    this.$message.success(res.data.message)
+                                } else {
+                                    this.$message.error(res.data.message)
+                                }
+                            }).finally(() => {
+                                $("#editUser").attr("disable",false)
+                                if (this.queryAll === true) {
+                                    this.getList();
+                                } else {
+                                    this.getPage();
+                                }
+                                this.dialogFormVisible4Edit = false;
+                            });
+                        }).catch(() => {
+                            this.$message.info("操作取消");
+                        })
+                    } else {
+                        this.$message.error('验证失败');
+                        return false;
+                    }
+                })
+            }
+        }
+    })
+
+
+</script>
+
+</html>

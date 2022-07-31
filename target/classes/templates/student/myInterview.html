@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <title>我的面试信息</title>
+    <link rel="stylesheet" href="../css/amazeui.min.css">
+    <link rel="stylesheet" href="../css/admin.css">
+    <link rel="stylesheet" type="text/css" href="../plugins/elementui/index.css">
+    <style>
+        .admin-main {
+            padding-top: 0px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="am-cf admin-main" id="editInterView">
+    <!-- content start -->
+    <div v-if="role!=='学生'">
+        <a href="/interview">
+            <i class="el-icon-back"></i>
+            <span style="font-size: 15px">返回</span>
+        </a>
+    </div>
+    <div class="admin-content">
+        <div class="admin-content-body">
+            <div class="am-g" style="width:65rem;">
+                <el-form  id="editInterview" :rules="rules" class="am-form am-form-horizontal" action="role/addroleSubmit.action" method="post"style="padding-top: 30px;">
+                    <input value="504" name="roleId" type="hidden">
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            学生姓名
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input id="roleName" v-model="fromList.sname" required="" placeholder="请输入姓名" name="sname"
+                                   type="text">
+                        </div>
+                    </div>
+                    <!-- 初次实习时间  初次实习单位 -->
+                    <div class="am-form-group">
+                        <label   class="am-u-sm-3 am-form-label">
+                            面试时间
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input  type="date" v-model="fromList.indate" name="indate"  />
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试企业
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input v-model="fromList.cname" type="text" name="cname" placeholder="请输入学生面试企业" />
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label class="am-u-sm-3 am-form-label">
+                            面试岗位
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input  v-model="fromList.jobs" type="text" name="jobs" placeholder="请输入学生面试岗位" />
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试结果
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input  v-model="fromList.results" type="text" name="results" placeholder="请输入学生面试结果" />
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            待遇
+                        </label>
+                        <div class="am-u-sm-9">
+                            <input  v-model="fromList.money" type="number" name="money" placeholder="请输入待遇" />
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试内容
+                        </label>
+                        <div class="am-u-sm-9">
+                            <!-- 保存文件 -->
+                            <input type="text" name="content" v-model="fromList.content" placeholder="请输入面试内容">
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试总结
+                        </label>
+                        <div class="am-u-sm-9">
+                            <textarea v-model="fromList.conclusion" name="conclusion" placeholder="请输入面试总结"></textarea>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            就业城市
+                        </label>
+                        <div class="am-u-sm-9">
+                            <div data-toggle="distpicker">
+                                <select name="prov" v-model="fromList.prov" id="prov"></select>
+                                <select name="city" v-model="fromList.city" id="city"></select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试照片
+                        </label>
+                        <div class="am-u-sm-9" v-if="fromList.picture!=null">
+                            <a :href="'http://kalictfer.com/file/download?filename='+fromList.picture+''" target="_blank"><el-button type="primary" size="mini"> 查看</el-button></a>
+                        </div>
+                        <div class="am-u-sm-9">
+                            <input type="file" name="photo" value="选择图片">
+                            <div class="el-upload__tip" slot="tip">只能上传jpg/png文件(大小不能超过10MB)</div>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <label  class="am-u-sm-3 am-form-label">
+                            面试简历
+                        </label>
+                        <div class="am-u-sm-9" v-if="fromList.resume!=null">
+                            <el-button type="primary" size="mini" @click="getResume()">下载</el-button>
+                        </div>
+                        <div class="am-u-sm-9">
+                            <input type="file" name="file" value="上传">
+                            <div class="el-upload__tip" slot="tip">只能上传doxx/pdf/docx文件(大小不能超过10MB)</div>
+                        </div>
+                    </div>
+
+                    <div class="am-form-group">
+                        <div class="am-u-sm-9 am-u-sm-push-3">
+                            <input id="text" class="am-btn am-btn-success" @click="getAll" value="确认" type="button">
+                        </div>
+                    </div>
+                </el-form>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script src="../js/xlsx.full.min.js"></script>
+<script type="text/javascript" src="../js/jquery.min.js"></script>
+<script src="../js/vue.js"></script>
+<script src="/js/jquery.cookie.js"></script>
+<script src="../plugins/elementui/index.js"></script>
+<script src="../js/axios-0.18.0.js"></script>
+<script>Vue.config.productionTip = false </script>
+<!-- 城市选择插件 -->
+<script src="../js/distpicker.js"></script>
+<script>
+    var inid = 0;
+    var editInterView = new Vue({
+        el:"#editInterView",
+        data:{
+            role:null,
+            fileList:[],
+            isSave:false, //默认为修改
+            fromList:{},
+            rules: {//校验规则
+                // type: [{required: true, message: '图书类别为必填项', trigger: 'blur'}],
+                // name: [{required: true, message: '图书名称为必填项', trigger: 'blur'}]
+            },
+        },
+
+        created(){
+            this.getUrl();
+        },
+        methods:{
+            getUrl:function (){
+                var srcId = location.href;
+                let role = $.cookie("role");
+                this.role = role;
+                var sid = srcId.substr(srcId.indexOf("?sid=")+5);
+                axios.get("/InterviewByid/"+sid).then((res) => {
+                    if (res.data.data!=null) {
+                        this.fromList = res.data.data;
+                        $("#prov").val(this.fromList.prov);
+                        $("#prov").trigger("change");
+                        $("#city").val(this.fromList.city);
+                        $("#city").trigger("change");
+                    } else {
+                        //如果没信息则改为保存
+                        this.save=true;
+                        this.$message.info("请填写面试信息")
+                    }
+                })
+                this.fromList.inid = inid;
+                this.fromList.sid = sid;
+            },
+
+            getSelect:function(e){//e代表被选中的值，即下拉框的value。由于写的是[item.id,item.label]，现在是包含2个值的数组
+                let [id,label]=e    //数组解构：数组解构时数组的元素是按次序排列的，变量的取值由它的位置决定
+                this.fromList.state = label;
+            },
+            getAll:function(){
+                var form =  new FormData(document.getElementById("editInterview"));
+                if(form.get("file").name===""){
+                    form.delete("file")
+                }
+                if(form.get("photo").name===""){
+                    form.delete("photo")
+                }
+                form.append("inid", this.fromList.inid)
+                form.append("sid",this.fromList.sid);
+                $("#text").attr("disable",true)
+                if(this.save!==true){ //如果不是保存则进行修改
+                    axios({
+                        url:"/editInterview",
+                        method:"put",
+                        data:form,
+                        processData:false,
+                        contentType:false,
+                    }).then(res => {
+                        if (res.data.flag){
+                            this.$message.success(res.data.message)
+                            setInterval(this.refresh,1500);
+                        }else {
+                            $("#text").attr("disable",false)
+                            this.$message.error(res.data.message);
+                        }
+                    })
+                }else{
+                    axios({
+                        url:"/insertInterview",
+                        method:"post",
+                        data:form,
+                        processData:false,
+                        contentType:false,
+                    }).then(res => {
+                        if (res.data.flag){
+                            this.$message.success(res.data.message)
+                            setInterval(this.refresh,1500);
+                        }else {
+                            $("#text").attr("disable",false)
+                            this.$message.error(res.data.message);
+                        }
+                    })
+                }
+            },
+            refresh(){
+                location.href = "http://www.hnjdzy.net/";
+            },
+            getInid(res){
+                this.fromList.inid = res;
+            },
+            handleChange(file, fileList) { //文件数量改变
+                this.fileList = fileList;
+            },
+            handleRemove(file, fileList) {
+                console.log(file, fileList);
+            },
+            handlePreview(file) {
+                console.log(file);
+            },
+        },
+    });
+</script>

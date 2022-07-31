@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<title>添加企业信息</title>
+	<link rel="stylesheet" href="/css/amazeui.min.css">
+	<link rel="stylesheet" href="/css/admin.css">
+	<link rel="stylesheet" type="text/css" href="/plugins/elementui/index.css">
+	<script src="/js/xlsx.full.min.js"></script>
+	<style>
+		.admin-main {
+			padding-top: 0px;
+		}
+	</style>
+</head>
+<body>
+
+<div class="am-cf admin-main" id="addState">
+	<!-- content start -->
+	<div>
+		<a href="/firm">
+			<i class="el-icon-back"></i>
+			<span style="font-size: 15px">返回</span>
+		</a>
+	</div>
+	<div class="admin-content">
+		<div class="admin-content-body">
+			<div class="am-g" style="width:65rem;">
+
+				<el-form ref="form" :model="formData" :rules="rules" class="am-form am-form-horizontal" action="role/addroleSubmit.action" method="post"style="padding-top: 30px;">
+					<input value="504" name="roleId" type="hidden">
+
+					<div class="am-form-group">
+						<label  class="am-u-sm-3 am-form-label">
+							企业名称
+						</label>
+						<div class="am-u-sm-9">
+							<el-form-item prop="cname">
+								<el-input  v-model="formData.cname" placeholder="请输入企业名称"/>
+							</el-form-item>
+							<!--									<el-input prop="cname" v-model="fromList.cname" placeholder="请输入企业名称" type="text" class="filter-item"></el-input>-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业地址
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="address">
+								<el-input  v-model="formData.address" placeholder="请输入企业地址"/>
+							</el-form-item>
+
+							<!--									<input v-model="fromList.address" type="text" name="address" placeholder="请输入企业地址" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业网址
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="url">
+								<el-input  v-model="formData.url" placeholder="请输入企业网址"/>
+							</el-form-item>
+
+							<!--									<input  type="url" v-model="fromList.url" name="url"  placeholder="请输入企业网址"  />-->
+						</div>
+					</div>
+
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业联系人职务
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="jobTitle">
+								<el-input  v-model="formData.jobTitle" placeholder="请输入企业联系人职务"/>
+							</el-form-item>
+
+							<!--									<input  v-model="fromList.jobTitle" type="text" name="jobTitle" placeholder="请输入企业联系人职务" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							联系手机号码
+						</label>
+						<div class="am-u-sm-9">
+							<el-form-item prop="telephone">
+								<el-input  v-model="formData.telephone" placeholder="请输入联系手机号码"/>
+							</el-form-item>
+							<!--									<input  v-model="fromList.telephone" type="number" name="telephone" placeholder="请输入联系手机号码" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业邮箱
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="email">
+								<el-input  v-model="formData.email" placeholder="请输入企业邮箱"/>
+							</el-form-item>
+
+							<!--									<input  v-model="fromList.email" type="email" name="email" placeholder="请输入企业邮箱" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业邮编
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="postcode">
+								<el-input  v-model="formData.postcode" placeholder="请输入企业邮编"/>
+							</el-form-item>
+
+							<!--									<input  v-model="fromList.postcode" type="number" name="postcode" placeholder="请输入企业邮编" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label">
+							企业传真
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="fax">
+								<el-input  v-model="formData.fax" placeholder="请输入企业传真"/>
+							</el-form-item>
+
+							<!--									<input  v-model="fromList.fax" type="text" name="fax" placeholder="请输入企业传真" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<label class="am-u-sm-3 am-form-label" >
+							企业工作人数
+						</label>
+						<div class="am-u-sm-9">
+
+							<el-form-item prop="persons">
+								<el-input  v-model="formData.persons" placeholder="请输入企业工作人数" @blur="resetForm()"/>
+							</el-form-item>
+
+							<!--									<input  v-model="fromList.persons" type="number" name="persons" placeholder="请输入企业工作人数" />-->
+						</div>
+					</div>
+
+					<div class="am-form-group">
+						<div class="am-u-sm-9 am-u-sm-push-3">
+							<input id="text" class="am-btn am-btn-success" @click="getAll" value="确认添加" type="button">
+						</div>
+					</div>
+				</el-form>
+			</div>
+		</div>
+	</div>
+</div>
+</body>
+</html>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+
+<script>
+
+	var shengfen = null;
+	var addState = new Vue({
+		el:"#addState",
+		data:{
+			formData: {},
+			rules: {//校验规则
+				cname: [{required: true,message: '请输入企业名称', trigger: 'change'}],
+				address:[{required: true,message: '请输入企业地址', trigger: 'change',pattern: /[\u4e00-\u9fa5]/}],
+				url: [{required: true, message: '格式为：https|http|ftp|rtsp|mms://www.xxx.com',trigger: 'change',
+					pattern: '^((https|http|ftp|rtsp|mms)?://)' +"+(([0-9a-z_!~*'().&=+$%-]+: )?[0-9a-z_!~*'().&=+$%-]+@)?" +'(([0-9]{1,3}\\.){3}[0-9]{1,3}' +'|' +"([0-9a-z_!~*'()-]+\\.)*" +'([0-9a-z][0-9a-z-]{0,61})?[0-9a-z]\\.' +'[a-z]{2,6})' +'(:[0-9]{1,5})?' +'((/?)|' +"(/[0-9a-zA-Z_!~*'().;?:@&=+$,%#-]+)+/?)$"}],
+
+				jobTitle:[{required: true,message: '请输入企业联系人职务', trigger: 'change'}],
+				telephone:[{required: true,pattern:/^(13[0-9]|14[01456879]|15[0-35-9]|16[2567]|17[0-8]|18[0-9]|19[0-35-9])\d{8}$/,message:'手机号码格式不正确(11位数)',trigger:'change'}],
+				email:[{required: true, message: '请输入正确的企业邮箱',trigger: 'change',pattern:/^([a-zA-Z0-9]+[-_\.]?)+@[a-zA-Z0-9]+\.[a-z]+$/}],
+				postcode:[{required: true,message: '请输入正确的企业邮编(6位数)', trigger: 'change',pattern:/^[0-9]{6}$/}],
+				fax:[{required: true,message: '请输入正确的企业传真(7位或8位数字)', trigger: 'change',pattern:/^(?:\d{3,4}-)?\d{7,8}(?:-\d{1,6})?$/}],
+				persons:[{required: true,message: '请输入企业工作人数', trigger: 'change',pattern:/^\d+$|^\d+[.]?\d+$/}]
+			},
+		},
+		//钩子函数，VUE对象初始化完成后自动执行
+		created() {
+			//调用查询全部的操作
+			// this.getAll();
+		},
+		methods:{
+			getSelect:function(e){//e代表被选中的值，即下拉框的value。由于写的是[item.id,item.label]，现在是包含2个值的数组
+				let [id,label]=e    //数组解构：数组解构时数组的元素是按次序排列的，变量的取值由它的位置决定
+				this.formData.state = label;
+			},
+			getAll:function(){
+				this.$refs['form'].validate(valid => {
+					if(valid){
+						$("#text").attr("disabled",true)
+						axios.post("/company",this.formData).then((res)=>{
+							if (res.data.flag){
+								alert("添加成功");
+								location.href = "firm";
+							}else{
+								$("#text").attr("disabled",false)
+								alert("添加失败,格式可能不对");
+							}
+						})
+					}else{
+						this.$message.error('验证失败');
+						return false;
+					}
+				});
+			},
+		}
+	});
+
+</script>
+<script>
+	var array = [];
+	window.onload = function() {
+		$('#myExcel').change(function(e) {
+			var excelListData = [];
+			var files = e.target.files; //这里获取的是上传的文件对象数组 
+			if (files.length > 0) {
+				//这里是判断上传的文件格式  如果为xlsx 或xls 格式的文件 就上传成功 否则失败
+				var filesuffixs = files[0].name.split(".")[1]; //这是获取上传文件的后缀名的
+				if (filesuffixs == "xlsx" || filesuffixs == "xls") { //如果文件格式为xlsx/xls 就开始读取文件内数据
+					var fileReader = new FileReader();
+					fileReader.onload = function(ev) {
+						try {
+							var data = ev.target.result,
+									// 以二进制流方式读取得到整份excel表格对象
+									workbook = XLSX.read(data, {
+										type: 'binary'
+									}),
+									// 存储获取到的数据
+									excelListData = [];
+						} catch (e) {
+							alert('文件类型不正确');
+							return;
+						}
+						// 表格的表格范围，可用于判断表头是否数量是否正确
+						var fromTo = '';
+						// 遍历每张表读取
+						for (var sheet in workbook.Sheets) {
+							if (workbook.Sheets.hasOwnProperty(sheet)) {
+								fromTo = workbook.Sheets[sheet]['!ref'];
+								excelListData = excelListData.concat(XLSX.utils.sheet_to_json(workbook
+										.Sheets[sheet]));
+								// break; // 如果只取第一张表，就取消注释这行
+							}
+						}
+						array = excelListData; // 当前为表格转化后的数据 赋值给自己声明的array数组存储
+						console.log(array);
+						//这里判断数组内的json对象格式是否与数据库内字段一致 不一致也会导致上传失败 告诉用户失败原因
+						for (var i = 0; i < array.length; i++) { //遍历json对象数组
+							console.log(array[i]);
+							for (var key in array[i]) { //对每一个json对象的键进行判断
+								console.log(key); //这是获取json对象的键
+								console.log(array[i][key]); //这是获取json对象的键对应的值
+							}
+						}
+					};
+					// 使用文件流 以二进制方式打开文件 
+					fileReader.readAsBinaryString(files[0]); //关键代码 少了它  数据拿不到
+				} else {
+					alert("上传文件格式不对,请重新上传");
+				}
+			}
+		});
+	}
+</script>

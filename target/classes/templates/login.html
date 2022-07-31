@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录</title>
+    <link href="/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="/css/admin.css">
+    <link rel="stylesheet" type="text/css" href="/css/htmleaf-demo.css">
+    <link rel="stylesheet" type="text/css" href="/plugins/elementui/index.css">
+    <link href="/libs/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <link href="/disk/slidercaptcha.min.css" rel="stylesheet" />
+    <style type="text/css">
+        .form-bg {
+            padding: 2em 0;
+        }
+
+        .form-horizontal {
+            background: #fff;
+            padding-bottom: 40px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .form-horizontal .heading {
+            display: block;
+            font-size: 30px;
+            font-weight: 700;
+            padding: 35px 0;
+            border-bottom: 1px solid #f0f0f0;
+            margin-bottom: 30px;
+        }
+
+        .form-horizontal .form-group {
+            padding: 0 40px;
+            margin: 0 0 25px 0;
+            position: relative;
+        }
+
+        .form-horizontal .form-control {
+            background: #f0f0f0;
+            border: none;
+            border-radius: 20px;
+            box-shadow: none;
+            padding: 0 20px 0 45px;
+            height: 40px;
+            transition: all 0.3s ease 0s;
+        }
+
+        .form-horizontal .form-control:focus {
+            background: #e0e0e0;
+            box-shadow: none;
+            outline: 0 none;
+        }
+
+        .form-horizontal .form-group i {
+            position: absolute;
+            top: 12px;
+            left: 60px;
+            font-size: 17px;
+            color: #c8c8c8;
+            transition: all 0.5s ease 0s;
+        }
+
+        .form-horizontal .form-control:focus + i {
+            color: #00b4ef;
+        }
+
+        .form-horizontal .fa-question-circle {
+            display: inline-block;
+            position: absolute;
+            top: 12px;
+            right: 60px;
+            font-size: 20px;
+            color: #808080;
+            transition: all 0.5s ease 0s;
+        }
+
+        .form-horizontal .fa-question-circle:hover {
+            color: #000;
+        }
+
+        .form-horizontal .main-checkbox {
+            float: left;
+            width: 20px;
+            height: 20px;
+            background: #11a3fc;
+            border-radius: 50%;
+            position: relative;
+            margin: 5px 0 0 5px;
+            border: 1px solid #11a3fc;
+        }
+
+        .form-horizontal .main-checkbox label {
+            width: 20px;
+            height: 20px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            cursor: pointer;
+        }
+
+        .form-horizontal .main-checkbox label:after {
+            content: "";
+            width: 10px;
+            height: 5px;
+            position: absolute;
+            top: 5px;
+            left: 4px;
+            border: 3px solid #fff;
+            border-top: none;
+            border-right: none;
+            background: transparent;
+            opacity: 0;
+            -webkit-transform: rotate(-45deg);
+            transform: rotate(-45deg);
+        }
+
+        .form-horizontal .main-checkbox input[type=checkbox] {
+            visibility: hidden;
+        }
+
+        .form-horizontal .main-checkbox input[type=checkbox]:checked + label:after {
+            opacity: 1;
+        }
+
+        .form-horizontal .text {
+            float: left;
+            margin-left: 7px;
+            line-height: 20px;
+            padding-top: 5px;
+            text-transform: capitalize;
+        }
+
+        .form-horizontal .btn {
+            float: right;
+            font-size: 14px;
+            color: #fff;
+            background: #00b4ef;
+            border-radius: 30px;
+            padding: 10px 25px;
+            border: none;
+            text-transform: capitalize;
+            transition: all 0.5s ease 0s;
+        }
+
+        @media only screen and (max-width: 479px) {
+            .form-horizontal .form-group {
+                padding: 0 25px;
+            }
+
+            .form-horizontal .form-group i {
+                left: 45px;
+            }
+
+            .form-horizontal .btn {
+                padding: 10px 20px;
+            }
+        }
+
+        .lab {
+            font-size: 15px;
+            display: block;
+            margin-left: -200px;
+            font-family: webdings;
+        }    .slidercaptcha {
+                 margin: 0 auto;
+                 width: 314px;
+                 height: 286px;
+                 border-radius: 4px;
+                 box-shadow: 0 0 10px rgba(0, 0, 0, 0.125);
+                 margin-top: 40px;
+             }
+
+        .slidercaptcha .card-body {
+            padding: 1rem;
+        }
+
+        .slidercaptcha canvas:first-child {
+            border-radius: 4px;
+            border: 1px solid #e6e8eb;
+        }
+
+        .slidercaptcha.card .card-header {
+            background-image: none;
+            background-color: rgba(0, 0, 0, 0.03);
+        }
+
+        .refreshIcon {
+            top: -54px;
+        }
+    </style>
+</head>
+<body>
+
+
+<div class="htmleaf-container" @keyup.enter="enterLogin()" style="z-index: -1">
+    <header class="htmleaf-header">
+        <h1>就业信息管理系统</h1>
+        <div class="htmleaf-links">
+        </div>
+    </header>
+    <div class="demo form-bg"  id="logFrom" >
+        <div class="container">
+            <div class="row">
+                <div class="col-md-offset-3 col-md-6">
+                    <form class="form-horizontal" :model="fromData">
+                        <span class="heading">登录</span>
+                        <label class="lab">账号</label>
+                        <div class="form-group">
+                            <input type="text"  class="form-control" id="username"
+                                   v-model="fromData.username" placeholder="账户" name="username"/>
+                            <i class="fa fa-user"></i>
+                        </div>
+
+                        <label for="password" class="lab">密码</label>
+                        <div class="form-group help">
+                            <input type="password"  class="form-control" id="password"
+                                   v-model="fromData.password" placeholder="密码" name="password"/>
+                            <i class="fa fa-key"></i>
+                        </div>
+                        <div class="form-group">
+                            <div class="main-checkbox">
+                                <input type="checkbox" v-model="fromData.remember"  id="checkbox1"
+                                       name="remember"/>
+                                <label for="checkbox1"></label>
+                            </div>
+
+                            <span class="text">记住我</span>
+                            <button type="button" class="btn btn-default" id="login" @click="login()">立刻登录</button>
+                            <button type="button" style="display: none" ></button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!--滑动验证图片-->
+    <div id="boxs" class="container-fluid" style="position: absolute; left: 40%; top: 17%; z-index: 999;">
+        <div class="form-row" style=" background-color:rgba(1,1,1,1); background-color: white">
+            <div class="col-12">
+                <div class="slidercaptcha card">
+                    <div class="card-header">
+                        <span>请完成安全验证!</span>
+                    </div>
+                    <div class="card-body">
+                        <div id="captcha"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<script type="text/javascript" src="/js/jquery.min.js"></script>
+<script src="/disk/longbow.slidercaptcha.min.js"></script>
+<script>
+    $("#boxs").hide();
+    function sj() {
+        //x上限，y下限
+        var x = 4;
+        var y = 0;
+        var rand = parseInt(Math.random() * (x - y + 1) + y);
+        return rand;
+    }
+    var captcha = sliderCaptcha({
+        id: 'captcha',
+        setSrc: function () {
+            return '/images/Pic' + sj() + '.jpg';
+        },
+        onSuccess: function () {  //成功事件
+            var handler = setTimeout(function () {
+                window.clearTimeout(handler);
+                captcha.reset();
+                $("#boxs").hide();
+                $(".btn").attr("disabled",false);
+            }, 500);
+        }
+    });
+</script>
+</body>
+</html>
+
+<script src="/js/jquery.cookie.js"></script>
+<script src="/js/vue.js"></script>
+<script src="/plugins/elementui/index.js"></script>
+<script src="/js/axios-0.18.0.js"></script>
+<script>
+    //记录密码错误的次数
+    var i = 0;
+    var app = new Vue({
+        el: "#logFrom",
+        data: {
+            fromData: {},
+        },
+        created() {
+        },
+        methods: {
+            getUR: function () {
+                let username = $.cookie("username");
+                if(username!=null) this.fromData.username = username;
+            },
+            login: function () {
+                console.log(this.fromData)
+                let str = "";
+                str +="?username="+this.fromData.username;
+                str +="&password="+this.fromData.password;
+                str +="&remember="+this.fromData.remember;
+                $("#login").attr("disabled",true)
+                axios.post("/user/login"+str)
+                    .then((res) => {
+                        if (res.data.status=="ok") {
+                            this.$message.success("登陆成功!2s后跳转");
+                            setInterval(this.jump,2000);
+                        }else{
+                            $("#login").attr("disabled",false)
+                            this.$message.error("账号或密码错误!")
+                            i++;
+                            if(i>=3){
+                                $(".btn").attr("disabled",true);
+                                $("#boxs").show();
+                            }
+                        }
+                    })
+            },
+            enterLogin:function (){
+                this.login();
+            },
+            jump:function (){
+                location.href = "/index";
+            }
+        }
+    })
+</script>
